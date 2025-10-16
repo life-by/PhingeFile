@@ -308,10 +308,23 @@
         .clear-btn:hover {
             box-shadow: 0 5px 15px rgba(245, 101, 101, 0.4);
         }
+
+        .delete-all-btn {
+            background: #e53e3e;
+            margin-top: 8px;
+        }
+        
+        .delete-all-btn:hover {
+            box-shadow: 0 5px 15px rgba(229, 62, 62, 0.4);
+        }
         
         .data-actions {
             text-align: center;
             margin-bottom: 12px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         
         /* টেবিল স্টাইল */
@@ -574,6 +587,58 @@
             border-radius: 4px;
             font-size: 0.7rem;
         }
+
+        .delete-confirm-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1001;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .delete-confirm-modal h3 {
+            color: #e53e3e;
+            margin-bottom: 15px;
+        }
+
+        .delete-confirm-modal p {
+            margin-bottom: 20px;
+            color: #4a5568;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .confirm-delete-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .cancel-delete-btn {
+            background: #a0aec0;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -635,6 +700,7 @@
             <div class="data-actions">
                 <button class="btn refresh-btn" onclick="loadInputData()">ডেটা রিফ্রেশ করুন</button>
                 <button class="btn clear-btn" onclick="clearAllData()">সব ডেটা ডিলিট করুন</button>
+                <button class="btn delete-all-btn" onclick="showDeleteConfirm()">সব ডেটা ডিলিট করুন</button>
             </div>
             
             <div class="auto-refresh">
@@ -681,6 +747,17 @@
         </div>
         <div class="details-content" id="detailsContent">
             <!-- ডিটেলস কন্টেন্ট এখানে লোড হবে -->
+        </div>
+    </div>
+
+    <!-- ডিলিট কনফার্মেশন মডাল -->
+    <div class="overlay" id="deleteOverlay" style="display: none;"></div>
+    <div class="delete-confirm-modal" id="deleteConfirmModal">
+        <h3>⚠️ সব ডেটা ডিলিট করুন</h3>
+        <p>আপনি কি নিশ্চিত যে আপনি সব ডেটা সম্পূর্ণ ডিলিট করতে চান? এই একশনটি irreversible এবং সব ডেটা চিরতরে মুছে যাবে।</p>
+        <div class="modal-buttons">
+            <button class="confirm-delete-btn" onclick="deleteAllData()">হ্যাঁ, ডিলিট করুন</button>
+            <button class="cancel-delete-btn" onclick="hideDeleteConfirm()">বাতিল করুন</button>
         </div>
     </div>
 
@@ -1066,6 +1143,49 @@
                 loadInputData();
             }
         }
+
+        // ডিলিট কনফার্মেশন শো করা
+        function showDeleteConfirm() {
+            document.getElementById('deleteOverlay').style.display = 'block';
+            document.getElementById('deleteConfirmModal').style.display = 'block';
+        }
+
+        // ডিলিট কনফার্মেশন হাইড করা
+        function hideDeleteConfirm() {
+            document.getElementById('deleteOverlay').style.display = 'none';
+            document.getElementById('deleteConfirmModal').style.display = 'none';
+        }
+
+        // সব ডেটা ডিলিট করা
+        function deleteAllData() {
+            localStorage.removeItem('userInputData');
+            hideDeleteConfirm();
+            loadInputData();
+            showCustomAlert('সব ডেটা সফলভাবে ডিলিট করা হয়েছে!', 'success');
+        }
+
+        // কাস্টম এলার্ট শো করা
+        function showCustomAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 1002;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                background: ${type === 'success' ? '#48bb78' : '#e53e3e'};
+            `;
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
         
         // অটো রিফ্রেশ টগল করা
         function toggleAutoRefresh() {
@@ -1107,6 +1227,7 @@
         
         // ওভারলে ক্লিক করলে ডিটেলস ক্লোজ
         document.getElementById('overlay').addEventListener('click', closeDetails);
+        document.getElementById('deleteOverlay').addEventListener('click', hideDeleteConfirm);
     </script>
 </body>
 </html>
