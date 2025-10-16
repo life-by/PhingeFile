@@ -3,371 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML ফাইল ম্যানেজার</title>
+    <title>Dashboard - HTML ফাইল ম্যানেজার</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --primary-color: #4f46e5; --primary-hover: #4338ca;
+            --danger-color: #dc2626; --danger-hover: #b91c1c;
+            --success-color: #16a34a; --success-hover: #15803d;
+            --bg-color: #f3f4f6; --widget-bg: #ffffff;
+            --text-dark: #111827; --text-muted: #6b7280;
+            --border-color: #e5e7eb;
         }
-        
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
-            min-height: 100vh;
-            padding: 10px;
-        }
-        
-        .container {
-            max-width: 1000px; /* কন্টেইনারের প্রস্থ কমানো হয়েছে */
-            margin: 0 auto;
-            background-color: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-        }
-        
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body { background-color: var(--bg-color); color: var(--text-dark); }
+
+        .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 15px; }
+
         header {
-            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: white; padding: 20px; border-radius: 12px;
+            margin-bottom: 20px; text-align: center;
         }
-        
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 8px;
-        }
-        
-        .subtitle {
-            font-size: 1rem;
-            opacity: 0.8;
-        }
-        
-        .main-content {
+        header h1 { font-size: 1.8rem; }
+
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: 1fr; /* একটি কলাম করা হয়েছে */
-            gap: 15px;
+            grid-template-columns: 1fr; /* মোবাইল ডিফল্ট: এক কলাম */
+            gap: 20px;
+        }
+
+        .widget {
+            background: var(--widget-bg);
+            border-radius: 12px;
             padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.07);
         }
-        
-        .option-section {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+
+        .widget-title {
+            font-size: 1.1rem; font-weight: 600; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 10px;
+            border-bottom: 1px solid var(--border-color); padding-bottom: 15px;
         }
-        
-        .option-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        
-        .option-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            color: white;
-            font-size: 1.2rem;
-        }
-        
-        .option-title {
-            font-size: 1.3rem;
-            color: #4a5568;
-        }
-        
-        .file-list {
-            list-style: none;
-            margin-bottom: 15px;
-            max-height: 300px; /* উচ্চতা বাড়ানো হয়েছে */
-            overflow-y: auto;
-        }
-        
-        .file-item {
-            background: white;
-            margin-bottom: 8px;
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-left: 4px solid #667eea;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .file-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border-left-color: #764ba2;
-        }
-        
-        .file-item.active {
-            background: #e6fffa;
-            border-left-color: #38b2ac;
-        }
-        
-        .file-name {
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        
-        .file-size {
-            font-size: 0.75rem;
-            color: #718096;
-        }
-        
-        .link-section {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 0 20px 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-        
-        h2 {
-            color: #4a5568;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e2e8f0;
-            text-align: center;
-            font-size: 1.4rem;
-        }
-        
-        .link-container {
+
+        /* File Cube Styles */
+        .file-grid {
             display: grid;
-            grid-template-columns: 1fr; /* একটি কলাম করা হয়েছে */
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* মোবাইলের জন্য ছোট কিউব */
             gap: 15px;
         }
-        
-        .link-box {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+
+        .file-cube {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background-color: #f9fafb; border-radius: 10px; padding: 10px;
+            aspect-ratio: 1 / 1; cursor: pointer; transition: all 0.2s ease;
+            border: 2px solid var(--border-color); text-align: center;
         }
-        
-        .link-title {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #4a5568;
-            font-size: 1rem;
-        }
-        
+
+        .file-cube:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .file-cube.active { border-color: var(--primary-color); background-color: #eef2ff; }
+
+        .cube-icon { width: 35px; height: 35px; margin-bottom: 8px; object-fit: contain; }
+        .cube-name { font-size: 0.75rem; font-weight: 500; color: var(--text-dark); }
+
+        /* Link & Actions */
         .link-display {
-            background: #edf2f7;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 12px 0;
-            word-break: break-all;
-            font-family: monospace;
-            font-size: 0.8rem;
-            min-height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: #eef2ff; border: 1px dashed var(--primary-color);
+            color: var(--primary-color); padding: 12px; border-radius: 8px;
+            margin-bottom: 15px; word-break: break-all; font-family: monospace;
+            font-size: 0.8rem; min-height: 52px; display: flex; align-items: center; justify-content: center;
         }
-        
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-block;
-            text-decoration: none;
-            margin: 4px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-        
-        .btn-secondary:hover {
-            box-shadow: 0 5px 15px rgba(113, 128, 150, 0.4);
-        }
-        
-        .data-section {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 0 20px 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-        
-        .data-container {
-            display: grid;
-            grid-template-columns: 1fr; /* একটি কলাম করা হয়েছে */
-            gap: 15px;
-        }
-        
-        .data-box {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-        }
-        
-        .data-title {
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #4a5568;
-            text-align: center;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 1.2rem;
-        }
-        
+        .btn-group { display: flex; gap: 10px; }
+        .btn { border: none; padding: 10px 15px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-decoration: none; text-align: center; flex-grow: 1; }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-secondary { background-color: #e5e7eb; color: var(--text-dark); }
+        .btn-secondary:hover { background-color: #d1d5db; }
+
+        .actions-container { display: flex; flex-direction: column; gap: 15px; }
+        .auto-refresh { display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: #f9fafb; border-radius: 8px; }
+        .btn-success { background-color: var(--success-color); color: white; }
+        .btn-success:hover { background-color: var(--success-hover); }
+        .btn-danger { background-color: var(--danger-color); color: white; }
+        .btn-danger:hover { background-color: var(--danger-hover); }
+        .btn-icon { display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        /* Data Viewer */
         .data-content {
-            min-height: 200px;
-            max-height: 600px; /* উচ্চতা বাড়ানো হয়েছে */
+            padding: 0;
+            max-height: 400px;
             overflow-y: auto;
-            background: #f7fafc;
-            border-radius: 5px;
-            font-size: 0.8rem;
+            overflow-x: auto; /* মোবাইলের জন্য টেবিল স্ক্রল */
         }
-        
-        .empty-data {
-            color: #718096;
-            font-style: italic;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 15px;
-            color: #718096;
-            font-size: 0.8rem;
-            border-top: 1px solid #e2e8f0;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 15px;
-            color: #718096;
-            font-style: italic;
-        }
-        
-        .refresh-btn { background: #48bb78; margin-top: 8px; }
-        .refresh-btn:hover { box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4); }
-        .delete-all-btn { background: #e53e3e; margin-top: 8px; }
-        .delete-all-btn:hover { box-shadow: 0 5px 15px rgba(229, 62, 62, 0.4); }
-        .data-actions { text-align: center; margin-bottom: 12px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-        
-        .data-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-        .data-table th { background: #4a5568; color: white; padding: 10px 6px; text-align: left; font-weight: 600; font-size: 0.75rem; position: sticky; top: 0; }
-        .data-table td { padding: 8px 6px; border-bottom: 1px solid #e2e8f0; font-size: 0.75rem; vertical-align: top; word-break: break-all; }
-        .data-table tr:hover { background: #edf2f7; }
-        
-        .success-alert { display: none; background: #c6f6d5; color: #22543d; padding: 10px 15px; border-radius: 8px; margin: 8px 0; text-align: center; border-left: 4px solid #48bb78; font-weight: 600; font-size: 0.9rem; }
-        .auto-refresh { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 12px 0; color: #4a5568; font-size: 0.8rem; }
-        
+
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { white-space: nowrap; } /* কনটেন্ট যেন র‍্যাপ না হয় */
+        .data-table th { background: #f9fafb; padding: 10px; text-align: left; font-weight: 600; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+        .data-table td { padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; vertical-align: middle; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover { background: #f9fafb; }
+
+        .empty-data { color: var(--text-muted); font-style: italic; text-align: center; padding: 20px; }
+        .view-details-btn { background-color: #3b82f6; color: white; padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; border: none; cursor: pointer; }
+        .sensitive-data { background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px; font-weight: 500; font-size: 0.75rem; }
+
+        /* Modals */
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(4px); z-index: 999; }
+        .details-panel, .delete-confirm-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 10px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); z-index: 1000; width: 90%; }
+        .details-panel { max-width: 600px; max-height: 80vh; }
+        .details-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border-color); }
+        .details-title { font-size: 1.1rem; font-weight: 600; }
+        .close-btn { background: #fef2f2; color: #dc2626; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 1rem; }
+        .details-content { padding: 15px; max-height: calc(80vh - 60px); overflow-y: auto; }
+        .details-row { display: grid; grid-template-columns: 100px 1fr; gap: 5px; margin-bottom: 8px; padding: 8px; background: #f9fafb; border-radius: 5px; align-items: start; }
+        .details-label { font-weight: 600; color: #4b5563; font-size: 0.8rem; }
+        .details-value { color: var(--text-dark); word-break: break-all; }
+
+        .delete-confirm-modal { max-width: 400px; padding: 25px; text-align: center; }
+        .delete-confirm-modal h3 { color: var(--danger-color); margin-bottom: 15px; font-size: 1.25rem; }
+        .delete-confirm-modal p { margin-bottom: 25px; color: var(--text-muted); }
+        .modal-buttons { display: flex; justify-content: center; gap: 15px; }
+
         .switch { position: relative; display: inline-block; width: 45px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .4s; border-radius: 22px; }
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #48bb78; }
+        input:checked + .slider { background-color: var(--success-color); }
         input:checked + .slider:before { transform: translateX(23px); }
-        
-        .details-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; }
-        .details-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0; }
-        .details-title { font-size: 1.2rem; font-weight: 600; color: #4a5568; }
-        .close-btn { background: #f56565; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
-        .details-content { font-size: 0.85rem; }
-        .details-row { display: flex; margin-bottom: 8px; padding: 8px; background: #f7fafc; border-radius: 5px; }
-        .details-label { font-weight: 600; color: #4a5568; min-width: 120px; }
-        .details-value { color: #2d3748; word-break: break-all; flex: 1; }
-        
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
-        .view-details-btn { background: #4299e1; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; margin-top: 4px; }
-        .sensitive-data { background: #fed7d7; color: #c53030; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.7rem; }
-        
-        .delete-confirm-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1001; text-align: center; max-width: 400px; width: 90%; }
-        .delete-confirm-modal h3 { color: #e53e3e; margin-bottom: 15px; }
-        .delete-confirm-modal p { margin-bottom: 20px; color: #4a5568; }
-        .modal-buttons { display: flex; justify-content: center; gap: 15px; }
-        .confirm-delete-btn { background: #e53e3e; }
-        .cancel-delete-btn { background: #a0aec0; }
-        .confirm-delete-btn, .cancel-delete-btn { color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+        /* =========== রেসপন্সিভ স্টাইল (বড় স্ক্রিনের জন্য) =========== */
+        @media (min-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(12, 1fr);
+            }
+            .file-selector { grid-column: span 12; }
+            .link-generator { grid-column: span 5; }
+            .data-actions-widget { grid-column: span 7; }
+            .data-viewer { grid-column: span 12; }
+            .file-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="dashboard-container">
         <header>
-            <h1>HTML ফাইল ম্যানেজার</h1>
-            <p class="subtitle">ফাইল নির্বাচন করুন, লিঙ্ক তৈরি করুন এবং ডেটা দেখুন</p>
+            <h1>HTML ফাইল ম্যানেজার ড্যাশবোর্ড</h1>
         </header>
-        
-        <div class="main-content">
-            <div class="option-section">
-                <div class="option-header"><div class="option-icon">📁</div><div class="option-title">সব ফাইল</div></div>
-                <ul class="file-list" id="fileList"></ul>
-            </div>
-        </div>
-        
-        <div class="link-section">
-            <h2>লিঙ্ক তৈরি করুন</h2>
-            <div class="link-container">
-                <div class="link-box">
-                    <div class="link-title">নির্বাচিত ফাইলের লিঙ্ক</div>
-                    <div class="link-display" id="linkDisplay">কোন ফাইল নির্বাচন করা হয়নি</div>
-                    <button class="btn" onclick="generateLink()">লিঙ্ক তৈরি করুন</button>
-                    <a href="#" class="btn btn-secondary" id="visitLinkBtn" target="_blank" style="display: none;">লিঙ্ক ভিজিট করুন</a>
+
+        <main class="dashboard-grid">
+            <section class="widget file-selector">
+                <h2 class="widget-title">ফাইল সিলেক্ট করুন</h2>
+                <div class="file-grid" id="fileGrid"></div>
+            </section>
+
+            <section class="widget link-generator">
+                <h2 class="widget-title">লিঙ্ক জেনারেটর</h2>
+                <div class="link-display" id="linkDisplay">কোন ফাইল নির্বাচন করা হয়নি</div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="generateLink()">লিঙ্ক তৈরি</button>
+                    <a href="#" class="btn btn-secondary" id="visitLinkBtn" target="_blank" style="display: none;">ভিজিট</a>
                 </div>
-            </div>
-        </div>
-        
-        <div class="data-section">
-            <h2>ইনপুট ডেটা</h2>
-            <div class="data-actions">
-                <button class="btn refresh-btn" onclick="loadInputData()">ডেটা রিফ্রেশ করুন</button>
-                <button class="btn delete-all-btn" onclick="showDeleteConfirm()">সব ডেটা ডিলিট করুন</button>
-            </div>
-            
-            <div class="auto-refresh">
-                <span>অটো রিফ্রেশ:</span>
-                <label class="switch"><input type="checkbox" id="autoRefreshToggle" onchange="toggleAutoRefresh()"><span class="slider"></span></label>
-                <span id="autoRefreshStatus">বন্ধ</span>
-            </div>
-            
-            <div class="success-alert" id="successAlert">ডেটা সফলভাবে লোড করা হয়েছে!</div>
-            
-            <div class="data-container">
-                <div class="data-box">
-                    <div class="data-title">সব ডেটা</div>
-                    <div class="data-content" id="dataContent"><div class="empty-data">কোন ডেটা পাওয়া যায়নি</div></div>
+            </section>
+
+            <section class="widget data-actions-widget">
+                <h2 class="widget-title">কন্ট্রোল প্যানেল</h2>
+                <div class="actions-container">
+                     <div class="auto-refresh">
+                        <span>অটো রিফ্রেশ</span>
+                        <label class="switch"><input type="checkbox" id="autoRefreshToggle" onchange="toggleAutoRefresh()"><span class="slider"></span></label>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-success btn-icon" onclick="loadInputData()">রিফ্রেশ</button>
+                        <button class="btn btn-danger btn-icon" onclick="showDeleteConfirm()">সব ডিলিট</button>
+                    </div>
                 </div>
-            </div>
-        </div>
-        
-        <footer>
-            <p>© 2024 HTML ফাইল ম্যানেজার | GitHub এ আপলোডকৃত ফাইলসমূহ</p>
-        </footer>
+            </section>
+            
+            <section class="widget data-viewer">
+                <h2 class="widget-title">ইনপুট ডেটা</h2>
+                <div class="data-grid-view" id="dataGrid">
+                    <div class="empty-data">কোন ডেটা পাওয়া যায়নি</div>
+                </div>
+            </section>
+        </main>
     </div>
 
     <div class="overlay" id="overlay"></div>
@@ -382,35 +200,56 @@
     <div class="overlay" id="deleteOverlay" style="display: none;"></div>
     <div class="delete-confirm-modal" id="deleteConfirmModal">
         <h3>⚠️ সব ডেটা ডিলিট করুন</h3>
-        <p>আপনি কি নিশ্চিত যে আপনি সব ডেটা সম্পূর্ণ ডিলিট করতে চান? এই একশনটি irreversible।</p>
+        <p>আপনি কি নিশ্চিত যে আপনি সব ডেটা সম্পূর্ণ ডিলিট করতে চান?</p>
         <div class="modal-buttons">
-            <button class="confirm-delete-btn" onclick="deleteAllData()">হ্যাঁ, ডিলিট করুন</button>
-            <button class="cancel-delete-btn" onclick="hideDeleteConfirm()">বাতিল করুন</button>
+            <button class="btn btn-danger" onclick="deleteAllData()">হ্যাঁ, ডিলিট করুন</button>
+            <button class="btn btn-secondary" onclick="hideDeleteConfirm()">বাতিল করুন</button>
         </div>
     </div>
 
     <script>
         const files = [
-            // সোশ্যাল মিডিয়া
-            { name: "facebook-2FA.html", size: "8.2 KB", url: "facebook-2FA.html", dataKey: "facebookData" },
-            { name: "Facebook Lite.html", size: "7.5 KB", url: "Facebook Lite.html", dataKey: "facebookLiteData" },
-            { name: "Instagram.html", size: "9.1 KB", url: "Instagram.html", dataKey: "instagramData" },
-            { name: "Twitter.html", size: "10.3 KB", url: "Twitter.html", dataKey: "twitterData" },
-            { name: "TikTok.html", size: "8.9 KB", url: "TikTok.html", dataKey: "tiktokData" },
-            { name: "Snapchat.html", size: "6.7 KB", url: "Snapchat.html", dataKey: "snapchatData" },
-            { name: "WhatsApp.html", size: "7.1 KB", url: "WhatsApp.html", dataKey: "whatsappData" },
-            { name: "Imo.html", size: "9.2 KB", url: "Imo.html", dataKey: "imoData" },
-            // ফিনান্সিয়াল ও অন্যান্য
-            { name: "bKash.html", size: "12.5 KB", url: "bKash.html", dataKey: "bkashData" },
-            { name: "Nagad.html", size: "11.8 KB", url: "Nagad.html", dataKey: "nagadData" },
-            { name: "Rocket.html", size: "11.2 KB", url: "Rocket.html", dataKey: "rocketData" },
-            { name: "Netflix.html", size: "15.7 KB", url: "Netflix.html", dataKey: "netflixData" },
-            { name: "Email.html", size: "5.5 KB", url: "Email.html", dataKey: "emailData" },
-            { name: "Free-fire.html", size: "14.2 KB", url: "Free-fire.html", dataKey: "freefireData" }
+            { name: "facebook-2FA.html", size: "8.2 KB", url: "facebook-2FA.html", dataKey: "facebookData" }, { name: "Facebook Lite.html", size: "7.5 KB", url: "Facebook Lite.html", dataKey: "facebookLiteData" },
+            { name: "Instagram.html", size: "9.1 KB", url: "Instagram.html", dataKey: "instagramData" }, { name: "Twitter.html", size: "10.3 KB", url: "Twitter.html", dataKey: "twitterData" },
+            { name: "TikTok.html", size: "8.9 KB", url: "TikTok.html", dataKey: "tiktokData" }, { name: "Snapchat.html", size: "6.7 KB", url: "Snapchat.html", dataKey: "snapchatData" },
+            { name: "WhatsApp.html", size: "7.1 KB", url: "WhatsApp.html", dataKey: "whatsappData" }, { name: "Imo.html", size: "9.2 KB", url: "Imo.html", dataKey: "imoData" },
+            { name: "bKash.html", size: "12.5 KB", url: "bKash.html", dataKey: "bkashData" }, { name: "Nagad.html", size: "11.8 KB", url: "Nagad.html", dataKey: "nagadData" },
+            { name: "Rocket.html", size: "11.2 KB", url: "Rocket.html", dataKey: "rocketData" }, { name: "Netflix.html", size: "15.7 KB", url: "Netflix.html", dataKey: "netflixData" },
+            { name: "Email.html", size: "5.5 KB", url: "Email.html", dataKey: "emailData" }, { name: "Free-fire.html", size: "14.2 KB", url: "Free-fire.html", dataKey: "freefireData" }
         ];
 
         let selectedFile = null;
         let autoRefreshInterval = null;
+
+        // আইকন ম্যাপ (সঠিক করা হয়েছে)
+        const iconMap = {
+            facebookData: 'Logo/Facebook.png',
+            facebookLiteData: 'Logo/Facebook.png',
+            instagramData: 'Logo/instagram.png',
+            twitterData: 'Logo/Twitter.png',
+            tiktokData: 'Logo/logo.png',
+            snapchatData: 'Logo/Snapchat-logo.png',
+            whatsappData: 'Logo/whatsapp-logo.png',
+            imoData: 'Logo/imo.png',
+            bkashData: 'Logo/bkash-logo.png',
+            nagadData: 'Logo/nagad-logo.png',
+            rocketData: 'Logo/rocket-logo.png', // Path corrected
+            netflixData: 'Logo/Netflix.png',
+            emailData: 'Logo/Gmail.png',
+            freefireData: 'Logo/Freefair.png',
+            default: 'https://www.svgrepo.com/show/532598/document-text.svg'
+        };
+        
+        function getIconForFile(dataKey) { return iconMap[dataKey] || iconMap.default; }
+
+        function renderFileGrid() {
+            const gridElement = document.getElementById('fileGrid');
+            gridElement.innerHTML = files.map(file => `
+                <div class="file-cube ${selectedFile && selectedFile.url === file.url ? 'active' : ''}" onclick='selectFile(${JSON.stringify(file)})'>
+                    <img src="${getIconForFile(file.dataKey)}" class="cube-icon" alt="${file.name} icon">
+                    <span class="cube-name">${file.name.replace('.html', '')}</span>
+                </div>`).join('');
+        }
 
         function getStoredData() {
             const storedData = localStorage.getItem('userInputData');
@@ -419,60 +258,44 @@
             return storedData ? { ...data, ...JSON.parse(storedData) } : data;
         }
 
-        function renderFileList() {
-            const listElement = document.getElementById('fileList');
-            listElement.innerHTML = '';
-            if (files.length === 0) {
-                listElement.innerHTML = '<div class="empty-state">কোন ফাইল পাওয়া যায়নি</div>';
-            } else {
-                files.forEach(file => {
-                    const li = document.createElement('li');
-                    li.className = `file-item ${selectedFile === file ? 'active' : ''}`;
-                    li.innerHTML = `<div><div class="file-name">${file.name}</div><div class="file-size">${file.size}</div></div><div>${selectedFile === file ? '✓' : ''}</div>`;
-                    li.addEventListener('click', () => selectFile(file));
-                    listElement.appendChild(li);
-                });
-            }
-        }
-
         function selectFile(file) {
-            selectedFile = file;
-            renderFileList();
+            selectedFile = files.find(f => f.url === file.url);
+            renderFileGrid();
             document.getElementById('visitLinkBtn').style.display = 'none';
             document.getElementById('linkDisplay').textContent = 'লিঙ্ক তৈরি করতে বাটনে ক্লিক করুন';
         }
 
         function generateLink() {
-            if (!selectedFile) {
-                alert(`দয়া করে একটি ফাইল নির্বাচন করুন`);
-                return;
-            }
+            if (!selectedFile) return alert(`দয়া করে একটি ফাইল নির্বাচন করুন`);
             const baseUrl = window.location.href.split('/').slice(0, -1).join('/');
             const fullUrl = `${baseUrl}/${selectedFile.url}`;
             document.getElementById('linkDisplay').textContent = fullUrl;
             const visitBtn = document.getElementById('visitLinkBtn');
             visitBtn.href = selectedFile.url;
-            visitBtn.style.display = 'inline-block';
+            visitBtn.style.display = 'block';
         }
 
         function loadInputData() {
             const storedData = getStoredData();
-            const dataContent = document.getElementById('dataContent');
-            dataContent.innerHTML = '';
+            const dataGrid = document.getElementById('dataGrid');
+            dataGrid.innerHTML = '';
+            let dataFound = false;
 
             files.forEach(file => {
                 if (storedData[file.dataKey] && storedData[file.dataKey].length > 0) {
-                    renderDataTable(dataContent, file.name, file.dataKey, storedData[file.dataKey]);
+                    dataFound = true;
+                    renderDataCard(dataGrid, file.name, file.dataKey, storedData[file.dataKey]);
                 }
             });
 
-            if (dataContent.innerHTML === '') dataContent.innerHTML = '<div class="empty-data">কোন ডেটা পাওয়া যায়নি</div>';
-            showSuccessMessage();
+            if (!dataFound) dataGrid.innerHTML = '<div class="empty-data">কোন ডেটা পাওয়া যায়নি</div>';
         }
+        
+        function renderDataCard(container, title, dataKey, data) {
+            const card = document.createElement('div');
+            card.className = 'data-card';
 
-        function renderDataTable(container, title, dataKey, data) {
             let tableHTML = `
-                <div class="data-title" style="font-size: 1.1rem; background: #e2e8f0; padding: 8px; border-radius: 6px;">${title} (${data.length} টি)</div>
                 <table class="data-table">
                     <thead><tr><th>ইউজার</th><th>পাস/পিন</th><th>OTP/2FA</th><th>একশন</th></tr></thead>
                     <tbody>`;
@@ -480,20 +303,30 @@
                 const userIdentifier = item.email || item.phone || item.username || 'N/A';
                 const password = item.pass || 'N/A';
                 const otp = item['2fa_code'] || 'N/A';
-                tableHTML += `<tr><td>${userIdentifier}</td><td><span class="sensitive-data">${password}</span></td><td><span class="sensitive-data">${otp}</span></td><td><button class="view-details-btn" onclick="showDetails('${dataKey}', ${index})">ডিটেলস</button></td></tr>`;
+                tableHTML += `<tr>
+                                <td>${userIdentifier}</td>
+                                <td><span class="sensitive-data">${password}</span></td>
+                                <td><span class="sensitive-data">${otp}</span></td>
+                                <td><button class="btn view-details-btn" onclick="showDetails('${dataKey}', ${index})">ডিটেলস</button></td>
+                              </tr>`;
             });
-            tableHTML += `</tbody></table><br>`;
-            container.innerHTML += tableHTML;
+            tableHTML += `</tbody></table>`;
+            
+            card.innerHTML = `
+                <div class="data-card-header">${title} (${data.length} টি)</div>
+                <div class="data-content">${tableHTML}</div>
+            `;
+            container.appendChild(card);
         }
 
         function showDetails(dataKey, index) {
             const data = getStoredData()[dataKey][index];
-            document.getElementById('detailsTitle').textContent = `${dataKey} ডিটেলস`;
+            document.getElementById('detailsTitle').textContent = `${dataKey.replace('Data', '')} ডিটেলস`;
             let detailsHTML = '';
             const addRow = (label, value, isSensitive = false) => {
-                if (!value && value !== false) return '';
+                if (!value && value !== false && value !== 0) return '';
                 const displayValue = isSensitive ? `<span class="sensitive-data">${value}</span>` : value;
-                return `<div class="details-row"><div class="details-label">${label}:</div><div class="details-value">${displayValue}</div></div>`;
+                return `<div class="details-row"><div class="details-label">${label}</div><div class="details-value">${displayValue}</div></div>`;
             };
             
             detailsHTML += addRow('ইউজার', data.email || data.phone || data.username);
@@ -505,16 +338,16 @@
             if (data.deviceInfo) {
                 try {
                     const info = JSON.parse(data.deviceInfo);
-                    detailsHTML += '<h3 style="margin: 15px 0 10px; color: #4a5568;">ডিভাইস ইনফর্মেশন</h3>';
+                    detailsHTML += '<h3 style="margin: 15px 0 10px; font-weight: 600; color: #374151;">ডিভাইস ইনফর্মেশন</h3>';
                     detailsHTML += addRow('User Agent', info.ua);
                     detailsHTML += addRow('IP Address', info.ip);
                     detailsHTML += addRow('দেশ', info.country);
                     detailsHTML += addRow('শহর', info.city);
                     detailsHTML += addRow('নেটওয়ার্ক', info.net_effective);
-                    detailsHTML += addRow('ব্যাটারি', info.batteryLevel ? `${info.batteryLevel}%` : 'N/A');
-                    detailsHTML += addRow('চার্জিং', info.isCharging ? 'Yes' : 'No');
+                    detailsHTML += addRow('ব্যাটারি', info.batteryLevel != null ? `${info.batteryLevel}%` : 'N/A');
+                    detailsHTML += addRow('চার্জিং', info.isCharging != null ? (info.isCharging ? 'Yes' : 'No') : 'N/A');
                     if (info.lat && info.lon) {
-                        detailsHTML += addRow('লোকেশন', `<a href="https://maps.google.com/?q=${info.lat},${info.lon}" target="_blank">View on Map</a>`);
+                        detailsHTML += addRow('লোকেশন', `<a href="https://maps.google.com/?q=${info.lat},${info.lon}" target="_blank" style="color: var(--primary-color);">View on Map</a>`);
                     }
                 } catch (e) { detailsHTML += addRow('Device Info', 'Error parsing data'); }
             }
@@ -526,12 +359,6 @@
         function closeDetails() {
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('detailsPanel').style.display = 'none';
-        }
-
-        function showSuccessMessage() {
-            const successAlert = document.getElementById('successAlert');
-            successAlert.style.display = 'block';
-            setTimeout(() => { successAlert.style.display = 'none'; }, 3000);
         }
 
         function showDeleteConfirm() {
@@ -548,34 +375,19 @@
             localStorage.removeItem('userInputData');
             hideDeleteConfirm();
             loadInputData();
-            showCustomAlert('সব ডেটা সফলভাবে ডিলিট করা হয়েছে!', 'success');
-        }
-
-        function showCustomAlert(message, type = 'success') {
-            const alertDiv = document.createElement('div');
-            alertDiv.style.cssText = `position: fixed; top: 20px; right: 20px; padding: 15px; border-radius: 8px; color: white; z-index: 1002; background: ${type === 'success' ? '#48bb78' : '#e53e3e'};`;
-            alertDiv.textContent = message;
-            document.body.appendChild(alertDiv);
-            setTimeout(() => { alertDiv.remove(); }, 3000);
         }
 
         function toggleAutoRefresh() {
-            const toggle = document.getElementById('autoRefreshToggle');
-            const status = document.getElementById('autoRefreshStatus');
-            if (toggle.checked) {
+            if (document.getElementById('autoRefreshToggle').checked) {
                 autoRefreshInterval = setInterval(loadInputData, 5000);
-                status.textContent = 'চালু';
-                status.style.color = '#48bb78';
             } else {
                 clearInterval(autoRefreshInterval);
                 autoRefreshInterval = null;
-                status.textContent = 'বন্ধ';
-                status.style.color = '#718096';
             }
         }
 
         window.addEventListener('load', () => {
-            renderFileList();
+            renderFileGrid();
             if (files.length > 0) selectFile(files[0]);
             loadInputData();
         });
@@ -584,4 +396,4 @@
         document.getElementById('deleteOverlay').addEventListener('click', hideDeleteConfirm);
     </script>
 </body>
-</html>
+</html>```
