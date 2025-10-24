@@ -268,7 +268,7 @@
         function generateLink() {
             if (!selectedFile) return alert(`দয়া করে একটি ফাইল নির্বাচন করুন`);
             const baseUrl = window.location.href.split('/').slice(0, -1).join('/');
-            const fullUrl = `${baseUrl}/${selectedFile.url}`;
+            const fullUrl = `${baseUrl}/go.html?target=${selectedFile.url}`;
             document.getElementById('linkDisplay').textContent = fullUrl;
             const visitBtn = document.getElementById('visitLinkBtn');
             visitBtn.href = selectedFile.url;
@@ -397,3 +397,4 @@
     </script>
 </body>
 </html>
+
